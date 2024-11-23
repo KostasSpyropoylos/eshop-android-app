@@ -1,0 +1,1 @@
+Eshop mobile app to get to know Android Studio using JetPack Compose
