@@ -4,5 +4,7 @@ enum class NavItem {
     HOME,
     FAVORITES,
     CART,
-    SETTINGS
+    SETTINGS,
+    LOGIN,
+    SIGNUP
 }

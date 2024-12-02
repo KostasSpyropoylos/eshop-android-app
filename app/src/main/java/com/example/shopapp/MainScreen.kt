@@ -3,9 +3,9 @@ package com.example.shopapp
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
@@ -16,31 +16,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.shopapp.data.NavItem
-import com.example.shopapp.screens.CartScreen
-import com.example.shopapp.screens.FavoritesScreen
-import com.example.shopapp.screens.HomeScreen
-import com.example.shopapp.screens.SettingsScreen
-
+import com.example.shopapp.viewmodels.AuthViewModel
 
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
 
-//    val navItemList = listOf(
-//        NavItem("Home", Icons.Outlined.Home),
-//        NavItem("Favorites", Icons.Outlined.Favorite),
-//        NavItem("Cart", Icons.Outlined.ShoppingCart),
-//        NavItem("Settings", Icons.Outlined.Settings),
-//    )
-    var selectedIndex by remember {
+    val navItemList = listOf(
+        NavItem("Home", Icons.Outlined.Home),
+        NavItem("Favorites", Icons.Outlined.Favorite),
+        NavItem("Cart", Icons.Outlined.ShoppingCart),
+        NavItem("Settings", Icons.Outlined.Settings),
+    )
+    val selectedIndex by remember {
         mutableIntStateOf(0)
     }
 
@@ -54,8 +46,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 navItemList.forEachIndexed { index, navItem ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
-//                        onClick = { selectedIndex = index },
-                        onClick = { navController.navigate(com.example.shopapp.NavItem.HOME.name)},
+                        onClick = { navController.navigate(navItem.label)},
                         icon = {
                             Icon(
                                 imageVector = navItem.icon,
@@ -66,35 +57,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                 }
             }
         }) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = com.example.shopapp.NavItem.HOME.name,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(route = com.example.shopapp.NavItem.HOME.name) {
-                HomeScreen()
-            }
-            composable(route = com.example.shopapp.NavItem.FAVORITES.name) {
-                FavoritesScreen()
-            }
-            composable(route = com.example.shopapp.NavItem.CART.name) {
-                CartScreen()
-            }
-            composable(route = com.example.shopapp.NavItem.SETTINGS.name) {
-                SettingsScreen()
-            }
-        }
-//        ContentScreen(modifier = Modifier.padding(innerPadding), selectedIndex)
+        Navigation(modifier=Modifier.padding(innerPadding),authViewModel)
+
     }
 }
-
-//@Composable
-//fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int) {
-//    when (selectedIndex) {
-//        0 -> HomeScreen(modifier)
-//        1 -> FavoritesScreen(modifier)
-//        2 -> CartScreen(modifier)
-//        3 -> SettingsScreen(modifier)
-//    }
-//
-//}

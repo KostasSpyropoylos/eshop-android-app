@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "879611189614",
+    "project_id": "webdevshopapp",
+    "storage_bucket": "webdevshopapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879611189614:android:562bfe6ec7cf5d4665497f",
+        "android_client_info": {
+          "package_name": "com.example.shopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKIpkQsMjnuxCf4CF-nCWIuFM4cMXAGn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

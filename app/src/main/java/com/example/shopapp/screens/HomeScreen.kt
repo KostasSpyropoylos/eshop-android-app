@@ -37,11 +37,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.shopapp.R
 import com.example.shopapp.data.Category
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(modifier: Modifier = Modifier,navController: NavController) {
     val categories = listOf(
         Category("Technology", Icons.Default.Phone),
         Category("Apparel", Icons.Default.Person)
