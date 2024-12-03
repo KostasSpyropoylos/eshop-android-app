@@ -36,7 +36,7 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
         NavItem("Cart", Icons.Outlined.ShoppingCart),
         NavItem("Settings", Icons.Outlined.Settings),
     )
-    val selectedIndex by remember {
+    val selectedIndex = remember {
         mutableIntStateOf(0)
     }
 
@@ -66,12 +66,14 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {},
         bottomBar = {
-            if (showBottomBar.value) {
                 NavigationBar {
                     navItemList.forEachIndexed { index, navItem ->
                         NavigationBarItem(
-                            selected = selectedIndex == index,
-                            onClick = { navController.navigate(navItem.label) },
+                            selected = selectedIndex.value == index,
+                            onClick = {
+                                selectedIndex.value = index
+                                navController.navigate(navItem.label)
+                            },
                             icon = {
                                 Icon(
                                     imageVector = navItem.icon,
@@ -82,7 +84,7 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
                         )
                     }
                 }
-            }
+
         }
     ) { innerPadding ->
         Navigation(

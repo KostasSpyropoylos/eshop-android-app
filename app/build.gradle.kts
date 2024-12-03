@@ -47,20 +47,20 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.constraintlayout.compose.android)
     implementation(libs.androidx.foundation.layout.android)
-    val nav_version = "2.8.4"
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
-    implementation ("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    implementation ("androidx.navigation:navigation-ui-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation (libs.androidx.navigation.fragment.ktx)
+    implementation (libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.navigation.compose.v284)
     // Import the BoM for the Firebase platform
-    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation(platform(libs.firebase.bom))
+    implementation (libs.google.accompanist.systemuicontroller)
 
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation("com.google.firebase:firebase-auth")
+    implementation(libs.google.firebase.auth)
 
     // Also add the dependency for the Google Play services library and specify its version
     implementation("com.google.android.gms:play-services-auth:21.2.0")

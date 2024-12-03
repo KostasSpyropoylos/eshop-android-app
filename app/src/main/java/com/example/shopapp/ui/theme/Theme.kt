@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import com.example.shopapp.ui.theme.AppThemeManager
 import com.example.ui.theme.AppTypography
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -259,7 +261,6 @@ val unspecified_scheme = ColorFamily(
 
 @Composable
 fun AppTheme(
-//    darkTheme: Boolean = isSystemInDarkTheme(),
     darkTheme: Boolean=false,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -267,21 +268,16 @@ fun AppTheme(
 ) {
 
 
-
-    // Initialize the theme manager if not set
-
-
     val colorScheme = if (darkTheme) darkScheme else lightScheme
 
-//    val colorScheme = when {
-//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-//            val context = LocalContext.current
-//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-//        }
-//
-//        darkTheme -> darkScheme
-//        else -> lightScheme
-//    }
+    val systemUiController: SystemUiController = rememberSystemUiController()
+
+    systemUiController.setSystemBarsColor(
+        color = if (darkTheme) Color.Black else Color.White
+    )
+    systemUiController.setNavigationBarColor(
+        color = if (darkTheme) Color.White else Color.Black
+    )
 
     MaterialTheme(
         colorScheme = colorScheme,
