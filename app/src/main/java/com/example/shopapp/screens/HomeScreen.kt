@@ -40,9 +40,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.shopapp.R
 import com.example.shopapp.data.Category
+import com.example.shopapp.viewmodels.AuthViewModel
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier,navController: NavController) {
+fun HomeScreen(modifier: Modifier = Modifier,navController: NavController,
+               authViewModel: AuthViewModel
+) {
     val categories = listOf(
         Category("Technology", Icons.Default.Phone),
         Category("Apparel", Icons.Default.Person)

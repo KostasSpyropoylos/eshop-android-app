@@ -109,7 +109,7 @@ fun LoginScreen(
 
         // Login button
         OutlinedButton(
-            onClick = { },
+            onClick = {authViewModel.login(userName.value, userPassword.value) },
             modifier = Modifier
                 .padding(0.dp, 25.dp, 0.dp, 0.dp)
         ) {

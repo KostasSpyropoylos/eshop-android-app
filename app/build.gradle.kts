@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.shopapp"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -44,6 +44,9 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.constraintlayout.compose.android)
+    implementation(libs.androidx.foundation.layout.android)
     val nav_version = "2.8.4"
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
