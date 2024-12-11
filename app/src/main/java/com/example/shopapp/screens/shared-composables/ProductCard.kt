@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import androidx.navigation.NavController
 import androidx.wear.compose.material.Text
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -48,7 +49,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.max
 
 @Composable
-fun DynamicVerticalGrid(modifier: Modifier, productList: List<Product>) {
+fun DynamicVerticalGrid(
+    modifier: Modifier,
+    productList: List<Product>,
+    navController: NavController
+) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val horizontalPadding = 16.dp
@@ -67,13 +72,13 @@ fun DynamicVerticalGrid(modifier: Modifier, productList: List<Product>) {
             .padding(8.dp)
     ) {
         items(productList) { product ->
-            ProductCard(product)
+            ProductCard(product, navController)
         }
     }
 }
 
 @Composable
-fun ProductCard(product: Product) {
+fun ProductCard(product: Product, navController: NavController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     var isFavorite by remember { mutableStateOf(false) }
@@ -99,6 +104,8 @@ fun ProductCard(product: Product) {
                 product.name + " selected..",
                 Toast.LENGTH_SHORT
             ).show()
+            navController.navigate("product-details/${product.name}")
+
         },
         modifier = Modifier
             .fillMaxSize()
@@ -186,7 +193,7 @@ fun ProductCard(product: Product) {
             ) // Show product name
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "€${product.price}",
+                text = "${product.price}€",
                 style = MaterialTheme.typography.bodySmall
             )
         }

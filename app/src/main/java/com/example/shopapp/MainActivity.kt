@@ -18,15 +18,18 @@ import com.google.firebase.firestore.firestore
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         val db = FirebaseFirestore.getInstance()
+
 
         enableEdgeToEdge()
         val authViewModel: AuthViewModel by viewModels()
         setContent {
             AppTheme(darkTheme = AppThemeManager.isDarkThemeEnabled) {
-                    MainScreen(modifier = Modifier,authViewModel)
-                }
+                MainScreen(modifier = Modifier, authViewModel)
             }
         }
     }
+}
 

@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.shopapp.screens.CartScreen
 import com.example.shopapp.screens.FavoritesScreen
 import com.example.shopapp.screens.HomeScreen
+import com.example.shopapp.screens.ProductDetailsScreen
 import com.example.shopapp.screens.ProductListScreen
 import com.example.shopapp.screens.auth.LoginScreen
 import com.example.shopapp.screens.SettingsScreen
@@ -43,6 +44,13 @@ fun Navigation(modifier: Modifier = Modifier, navController: NavHostController, 
         ) { backStackEntry ->
             val categoryId = backStackEntry.arguments?.getString("categoryId")
             ProductListScreen(modifier, navController, categoryId)
+        }
+        composable(
+            route = "product-details/{productName}",
+            arguments = listOf(navArgument("productName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("productName")
+            ProductDetailsScreen(modifier, navController, categoryId)
         }
     })
 }

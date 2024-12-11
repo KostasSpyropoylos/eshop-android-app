@@ -21,7 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun FavoritesScreen(
     modifier: Modifier,
     navController: NavHostController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+
 ) {
     val db = FirebaseFirestore.getInstance()
     val productList = remember { mutableStateListOf<Product>() }
@@ -65,7 +66,7 @@ fun FavoritesScreen(
         }
     } else {
         // Render the product list after fetching data
-        DynamicVerticalGrid(modifier, productList)
+        DynamicVerticalGrid(modifier, productList,navController)
     }
 
 }
