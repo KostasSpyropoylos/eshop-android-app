@@ -2,6 +2,7 @@
 accompanistSystemuicontrollerVersion = "0.28.0"
 agp = "8.7.2"
 androidxNavigationCompose = "{latest_version}"
+coilComposeVersion = "2.3.0"
 firebaseBom = "33.6.0"
 kotlin = "2.0.0"
 coreKtx = "1.10.1"
@@ -12,6 +13,7 @@ lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 navigationComposeVersion = "2.8.4"
+playServicesAuthVersion = "21.2.0"
 uiTextGoogleFonts = "1.7.5"
 navigationRuntimeKtx = "2.8.4"
 navigationCompose = "2.9.0-alpha03"
@@ -22,6 +24,8 @@ firebaseCrashlyticsBuildtools = "3.0.2"
 composeMaterial = "1.4.0"
 constraintlayoutComposeAndroid = "1.1.0"
 foundationLayoutAndroid = "1.7.2"
+firebaseDatabaseVersion = "21.0.0"
+foundationAndroidVersion = "1.7.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,7 +33,9 @@ androidx-navigation-compose-v284 = { module = "androidx.navigation:navigation-co
 androidx-navigation-compose-vlatestversion = { module = "androidx.navigation:navigation-compose", version.ref = "androidxNavigationCompose" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationComposeVersion" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationComposeVersion" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 google-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontrollerVersion" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -54,6 +60,9 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 androidx-constraintlayout-compose-android = { group = "androidx.constraintlayout", name = "constraintlayout-compose-android", version.ref = "constraintlayoutComposeAndroid" }
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabaseVersion" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuthVersion" }
+androidx-foundation-android = { group = "androidx.compose.foundation", name = "foundation-android", version.ref = "foundationAndroidVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
