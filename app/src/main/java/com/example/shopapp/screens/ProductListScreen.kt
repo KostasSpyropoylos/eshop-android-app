@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.example.shopapp.data.Product
 import com.example.shopapp.screens.shared.DynamicVerticalGrid
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -18,6 +19,7 @@ fun ProductListScreen(
     categoryId: String?
 ) {
     val db = FirebaseFirestore.getInstance()
+
     val productList = remember { mutableStateListOf<Product>() }
 
     LaunchedEffect(categoryId) {

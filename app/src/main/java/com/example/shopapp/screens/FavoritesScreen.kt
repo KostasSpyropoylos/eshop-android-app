@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import com.example.shopapp.data.Product
 import com.example.shopapp.screens.shared.DynamicVerticalGrid
 import com.example.shopapp.viewmodels.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -28,9 +29,11 @@ fun FavoritesScreen(
     val productList = remember { mutableStateListOf<Product>() }
     val isLoading = remember { mutableStateOf(true) }  // Track loading state
 
+    val userId= FirebaseAuth.getInstance().currentUser?.uid
     // Fetch favorite products
     LaunchedEffect(Unit) {
         db.collection("favorites")
+            .whereEqualTo("userId",userId)
             .get()
             .addOnSuccessListener { result ->
                 // For each favorite product, fetch its details from the products collection

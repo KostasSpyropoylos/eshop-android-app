@@ -184,7 +184,7 @@ fun ShopByCategory(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = 10.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

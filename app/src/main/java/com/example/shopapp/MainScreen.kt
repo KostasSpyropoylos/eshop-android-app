@@ -2,13 +2,16 @@ package com.example.shopapp
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -35,7 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
+fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
 
     val navItemList = listOf(
         NavItem("Home", Icons.Outlined.Home),
@@ -64,13 +67,9 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
     val currentRoute = currentBackStackEntry?.destination?.route
 
 
-
-
-
-
 // Hide bottom bar on specific routes
     showBottomBar.value = when (currentRoute) {
-        "login", "signup", "product-details/{productName}" -> false
+        "login", "signup", "product-details/{productName}","CART" -> false
         else -> true
     }
 
@@ -88,10 +87,17 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
                                 navController.navigate(navItem.label)
                             },
                             icon = {
-                                Icon(
-                                    imageVector = navItem.icon,
-                                    contentDescription = navItem.label
-                                )
+                                BadgedBox(badge = {
+//                                    if (navItem) {
+//
+//                                    }
+                                }) {
+
+                                    Icon(
+                                        imageVector = navItem.icon,
+                                        contentDescription = navItem.label
+                                    )
+                                }
                             },
                             label = { Text(text = navItem.label) }
                         )
@@ -106,14 +112,6 @@ fun MainScreen(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
                 navController = navController,
                 authViewModel = authViewModel,
             )
-
-            if (!showBottomBar.value) {
-                QuantitySelector(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .zIndex(1f)
-                )
-            }
         }
     }
 }

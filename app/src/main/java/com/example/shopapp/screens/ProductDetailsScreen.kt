@@ -70,6 +70,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shopapp.data.Product
 import com.example.shopapp.data.Specifications
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.max
 
@@ -182,8 +183,13 @@ fun ProductDetailsScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         RoundedTabs(productData)
 
-                        Spacer(modifier = Modifier.height(40.dp))
                     }
+                    QuantitySelector(
+                        modifier = modifier,
+                        productName = productData.name,
+                        navController = navController,
+                        selectedColor.value,
+                    )
                 }
             }
         } ?: run {
@@ -237,7 +243,7 @@ fun StarRatingBar(
 }
 
 @Composable
-private fun RingSample(color: String, isSelected: Boolean, onClick: () -> Unit) {
+public fun RingSample(color: String, isSelected: Boolean, onClick: () -> Unit) {
     // Use the hex parsing function to get the color
     val circleColor = color.fromHex(color)
 
@@ -370,8 +376,17 @@ fun SpecificationsContent(specifications: Specifications) {
 }
 
 @Composable
-fun QuantitySelector(modifier: Modifier = Modifier) {
+fun QuantitySelector(
+    modifier: Modifier = Modifier,
+    productName: String,
+    navController: NavHostController,
+    selectedColor: String
+) {
     var quantity by remember { mutableIntStateOf(1) }
+    var isAddedToCart by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     Row(
         modifier = modifier
@@ -382,50 +397,53 @@ fun QuantitySelector(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50.dp))
-                .background(MaterialTheme.colorScheme.background)
-                .border(
-                    2.dp,
-                    MaterialTheme.colorScheme.onBackground,
-                    shape = RoundedCornerShape(50.dp)
-                )
-
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = { if (quantity > 1) quantity-- },
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
-                    Text("-", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
-                }
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = quantity.toString(),
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 18.sp
+        if (!isAddedToCart) {
+            Column(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(MaterialTheme.colorScheme.background)
+                    .border(
+                        2.dp,
+                        MaterialTheme.colorScheme.onBackground,
+                        shape = RoundedCornerShape(50.dp)
                     )
-                }
-                Button(
-                    onClick = { quantity++ },
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
-                    Text("+", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
-                }
 
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = { if (quantity > 1) quantity-- },
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                    ) {
+                        Text("-", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = quantity.toString(),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 18.sp
+                        )
+                    }
+                    Button(
+                        onClick = { quantity++ },
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                    ) {
+                        Text("+", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
+                    }
+
+                }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
         }
-        Spacer(modifier = Modifier.width(8.dp))
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(50.dp))
@@ -433,11 +451,39 @@ fun QuantitySelector(modifier: Modifier = Modifier) {
         ) {
 
             Button(
-                onClick = { /* Handle button click */ },
+                onClick = {
+                    if (!isAddedToCart) {
+                        db.collection("cart").add(
+                            mapOf(
+                                "productName" to productName,
+                                "userId" to userId,
+                                "quantity" to quantity,
+                                "selectedColor" to selectedColor
+                            )
+                        )
+                        isAddedToCart = true
+                        Toast.makeText(
+                            context,
+                            "Added to cart",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Proceed to cart",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navController.navigate("CART")
+                    }
+                },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
             ) {
-                Text("Add to cart", color = Color.White, fontSize = 16.sp)
+                if (!isAddedToCart) {
+                    Text("Add to cart", color = Color.White, fontSize = 16.sp)
+                } else {
+                    Text("Proceed to cart", color = Color.White, fontSize = 16.sp)
+                }
             }
 
 

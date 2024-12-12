@@ -22,5 +22,6 @@ data class Product(
     val price: Float = 0f,
     val colors: List<String> = emptyList(),
     val specifications: Specifications = Specifications(),  // Specifications object
-    val reviews: List<Rating> = emptyList()  // List of Rating objects
+    val reviews: List<Rating> = emptyList(),  // List of Rating objects
+    val selectedColor: String = ""
 )

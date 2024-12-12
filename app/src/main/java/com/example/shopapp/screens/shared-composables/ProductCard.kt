@@ -45,6 +45,7 @@ import androidx.wear.compose.material.Text
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shopapp.data.Product
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.max
 
@@ -81,6 +82,8 @@ fun DynamicVerticalGrid(
 fun ProductCard(product: Product, navController: NavController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
     var isFavorite by remember { mutableStateOf(false) }
 
     // Perform Firestore query only when product is passed or when product changes
@@ -89,7 +92,6 @@ fun ProductCard(product: Product, navController: NavController) {
             .whereEqualTo("productName", product.name)
             .get()
             .addOnSuccessListener { result ->
-                // Check if the product is in the favorites collection
                 isFavorite = !result.isEmpty
             }
             .addOnFailureListener { e ->
@@ -97,105 +99,109 @@ fun ProductCard(product: Product, navController: NavController) {
             }
     }
 
-    Card(
-        onClick = {
-            Toast.makeText(
-                context,
-                product.name + " selected..",
-                Toast.LENGTH_SHORT
-            ).show()
-            navController.navigate("product-details/${product.name}")
-
-        },
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .fillMaxWidth() // Enforce full width within the grid
+            .aspectRatio(0.75f) // Fixed aspect ratio for consistent height
+            .padding(4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.LightGray)
+        Card(
+            onClick = {
+                Toast.makeText(
+                    context,
+                    product.name + " selected..",
+                    Toast.LENGTH_SHORT
+                ).show()
+                navController.navigate("product-details/${product.name}")
+            },
+            shape = RoundedCornerShape(8.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
         ) {
-            // Product image
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(product.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = product.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-            IconButton(
-                onClick = {
-                    if (isFavorite) {
-                        // Remove from Firestore (favorites)
-                        db.collection("favorites")
-                            .whereEqualTo("productName", product.name)
-                            .get()
-                            .addOnSuccessListener { result ->
-                                val document = result.documents.firstOrNull()
-                                document?.reference?.delete()  // Delete document from Firestore
-                                isFavorite = false  // Update local state
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.5f) // Image takes up proportional space
+                        .background(Color.LightGray)
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = product.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = {
+                            if (isFavorite) {
+                                db.collection("favorites")
+                                    .whereEqualTo("userId", userId)
+                                    .whereEqualTo("productName", product.name)
+                                    .get()
+                                    .addOnSuccessListener { result ->
+                                        val document = result.documents.firstOrNull()
+                                        document?.reference?.delete()
+                                        isFavorite = false
+                                        Toast.makeText(
+                                            context,
+                                            "Removed from favorites",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.w("Firestore", "Error removing from favorites", e)
+                                    }
+                            } else {
+                                db.collection("favorites").add(
+                                    mapOf(
+                                        "productName" to product.name,
+                                        "categoryId" to product.categoryId,
+                                        "userId" to userId
+                                    )
+                                )
+                                isFavorite = true
                                 Toast.makeText(
                                     context,
-                                    "Removed from favorites",
+                                    "Added to favorites",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                            .addOnFailureListener { e ->
-                                Log.w("Firestore", "Error removing from favorites", e)
-                            }
-                    } else {
-                        // Add to Firestore (favorites)
-                        db.collection("favorites").add(
-                            mapOf(
-                                "productName" to product.name,
-                                "categoryId" to product.categoryId
-                            )
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) Color.Red else Color.Gray
                         )
-                        isFavorite = true  // Update local state
-                        Toast.makeText(
-                            context,
-                            "Added to favorites",
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
-
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = "Favorite",
-                    tint = if (isFavorite) Color.Red else Color.Gray
-                )
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${product.price}€",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
-        }
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-
-        ) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.bodyLarge
-            ) // Show product name
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${product.price}€",
-                style = MaterialTheme.typography.bodySmall
-            )
         }
     }
 }
