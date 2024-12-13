@@ -21,21 +21,21 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shopapp.R
-import com.example.shopapp.ui.theme.AppThemeManager
+import com.example.shopapp.preferences.getThemePreference
+import com.example.shopapp.preferences.saveThemePreference
 import com.example.shopapp.viewmodels.AuthState
 import com.example.shopapp.viewmodels.AuthViewModel
 
@@ -233,14 +233,33 @@ fun SettingsScreen(
 
 @Composable
 fun ToggleSwitch() {
-    val isDarkTheme = AppThemeManager.isDarkThemeEnabled
-    var checked by remember { mutableStateOf(isDarkTheme) }
+    val context = LocalContext.current
+    val themePreference = remember { mutableStateOf("light") }
+    val isThemeLoaded = remember { mutableStateOf(false) }
 
+    // Load the current theme only once
+    LaunchedEffect(Unit) {
+        getThemePreference(context).collect { savedTheme ->
+            if (!isThemeLoaded.value) {
+                themePreference.value = savedTheme
+                isThemeLoaded.value = true // Mark theme as loaded
+            }
+        }
+    }
+
+    // Save the theme when the user explicitly toggles the switch
+    LaunchedEffect(isThemeLoaded.value, themePreference.value) {
+        if (isThemeLoaded.value) {
+            saveThemePreference(context, themePreference.value)
+        }
+    }
+
+    // Switch component to toggle between light and dark modes
     Switch(
-        checked = checked,
+        checked = themePreference.value == "dark",
         onCheckedChange = { isChecked ->
-            checked = isChecked
-            AppThemeManager.isDarkThemeEnabled = isChecked
+            // Update theme based on user toggle action
+            themePreference.value = if (isChecked) "dark" else "light"
         },
         colors = SwitchDefaults.colors(
             checkedThumbColor = MaterialTheme.colorScheme.primary,
@@ -249,5 +268,4 @@ fun ToggleSwitch() {
             uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
         )
     )
-
 }
