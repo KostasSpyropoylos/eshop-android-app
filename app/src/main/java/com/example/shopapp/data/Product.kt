@@ -1,5 +1,8 @@
 package com.example.shopapp.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+
 data class Rating(
     val rating: Int = 0,       // Rating value from 1 to 5
     val review: String = ""    // Review text
@@ -23,5 +26,6 @@ data class Product(
     val colors: List<String> = emptyList(),
     val specifications: Specifications = Specifications(),  // Specifications object
     val reviews: List<Rating> = emptyList(),  // List of Rating objects
-    val selectedColor: String = ""
+    val selectedColor: String = "",
+    var quantity: MutableState<Int> = mutableStateOf(0)
 )

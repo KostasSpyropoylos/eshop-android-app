@@ -69,36 +69,38 @@ fun CartScreen(
     val productList = remember { mutableStateListOf<Product>() }
     val userId = FirebaseAuth.getInstance().currentUser?.uid
     val isLoading = remember { mutableStateOf(true) }
-    var quantity by remember { mutableIntStateOf(1) }
+//    var quantity by remember { mutableIntStateOf(1) }
 
     val context = LocalContext.current
-    // Fetch favorite products
     LaunchedEffect(Unit) {
         db.collection("cart")
             .whereEqualTo("userId", userId)
             .get()
             .addOnSuccessListener { result ->
-                // For each favorite product, fetch its details from the products collection
-                val productNames = result.documents.map { it.getString("productName") }
+                val cartItems = result.documents.map { doc ->
+                    val productName = doc.getString("productName")
+                    val quantity = doc.getLong("quantity")?.toInt() ?: 0
+                    productName to quantity
+                }.filter { it.first != null }
 
-                productNames.forEach { productName ->
-                    if (productName != null) {
-                        db.collection("products")
-                            .whereEqualTo("name", productName)  // Assuming "name" is the key
-                            .get()
-                            .addOnSuccessListener { productResult ->
-                                for (doc in productResult) {
-                                    val product = doc.toObject(Product::class.java)
-                                    productList.add(product)
-                                }
-                                if (productNames.indexOf(productName) == productNames.size - 1) {
-                                    isLoading.value = false  // Loading complete
-                                }
+                cartItems.forEachIndexed { index, (productName, quantity) ->
+                    db.collection("products")
+                        .whereEqualTo("name", productName)  // Assuming "name" is the key
+                        .get()
+                        .addOnSuccessListener { productResult ->
+                            for (doc in productResult) {
+                                val product = doc.toObject(Product::class.java)
+                                product?.quantity =
+                                    mutableStateOf(quantity)  // Set the quantity field
+                                productList.add(product)
                             }
-                            .addOnFailureListener { e ->
-                                Log.w("Firestore", "Error fetching product details", e)
+                            if (index == cartItems.size - 1) {
+                                isLoading.value = false  // Loading complete
                             }
-                    }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error fetching product details", e)
+                        }
                 }
             }
             .addOnFailureListener { e ->
@@ -123,6 +125,7 @@ fun CartScreen(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp)
             ) {
                 items(productList) { product ->
+                    var quantity by product.quantity
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -183,7 +186,14 @@ fun CartScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Button(
-                                onClick = { if (quantity > 1) quantity-- },
+                                onClick = {
+                                    quantity--
+                                    updateCart(
+                                        product = product,
+                                        userId = userId!!,
+                                        productList
+                                    )
+                                },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                                 shape = CircleShape,
                                 modifier = Modifier
@@ -210,7 +220,13 @@ fun CartScreen(
                             )
 
                             Button(
-                                onClick = { quantity++ },
+                                onClick = {
+                                    quantity++
+                                    updateCart(
+                                        product = product,
+                                        userId = userId!!
+                                    )
+                                },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                                 shape = CircleShape,
                                 modifier = Modifier
@@ -239,14 +255,9 @@ fun CartScreen(
                     )
                 }
             }
-
-
             TotalPrice(modifier, productList)
 
         }
-
-
-//        DynamicVerticalGrid(modifier, productList,navController)
     }
 }
 
@@ -282,8 +293,38 @@ fun TotalPrice(
 fun calculateTotalPrice(productList: List<Product>): Double {
     var totalPrice = 0.0;
     productList.forEach { product ->
-        totalPrice += product.price
+        totalPrice += product.price * product.quantity.value
     }
     return totalPrice
 }
 
+fun updateCart(product: Product, userId: String, productList: MutableList<Product>?=null) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("cart")
+        .whereEqualTo("userId", userId)
+        .whereEqualTo("productName", product.name)
+        .get()
+        .addOnSuccessListener { result ->
+            if (!result.isEmpty) {
+                if (product.quantity.value > 0) {
+                    val docId = result.documents.first().id
+                    db.collection("cart").document(docId)
+                        .update("quantity", product.quantity.value)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Cart updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error updating cart", e)
+                        }
+                } else {
+                    db.collection("cart").document(result.documents.first().id)
+                        .delete()
+                    productList?.remove(product)
+
+                }
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.w("Firestore", "Error finding cart item", e)
+        }
+}
