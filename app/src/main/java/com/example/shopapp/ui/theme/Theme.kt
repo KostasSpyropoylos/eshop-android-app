@@ -5,7 +5,12 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.example.shopapp.preferences.getThemePreference
 import com.example.ui.theme.AppTypography
 import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -124,44 +129,6 @@ private val mediumContrastLightColorScheme = lightColorScheme(
     surfaceContainerHighest = surfaceContainerHighestLightMediumContrast,
 )
 
-private val highContrastLightColorScheme = lightColorScheme(
-    primary = primaryLightHighContrast,
-    onPrimary = onPrimaryLightHighContrast,
-    primaryContainer = primaryContainerLightHighContrast,
-    onPrimaryContainer = onPrimaryContainerLightHighContrast,
-    secondary = secondaryLightHighContrast,
-    onSecondary = onSecondaryLightHighContrast,
-    secondaryContainer = secondaryContainerLightHighContrast,
-    onSecondaryContainer = onSecondaryContainerLightHighContrast,
-    tertiary = tertiaryLightHighContrast,
-    onTertiary = onTertiaryLightHighContrast,
-    tertiaryContainer = tertiaryContainerLightHighContrast,
-    onTertiaryContainer = onTertiaryContainerLightHighContrast,
-    error = errorLightHighContrast,
-    onError = onErrorLightHighContrast,
-    errorContainer = errorContainerLightHighContrast,
-    onErrorContainer = onErrorContainerLightHighContrast,
-    background = backgroundLightHighContrast,
-    onBackground = onBackgroundLightHighContrast,
-    surface = surfaceLightHighContrast,
-    onSurface = onSurfaceLightHighContrast,
-    surfaceVariant = surfaceVariantLightHighContrast,
-    onSurfaceVariant = onSurfaceVariantLightHighContrast,
-    outline = outlineLightHighContrast,
-    outlineVariant = outlineVariantLightHighContrast,
-    scrim = scrimLightHighContrast,
-    inverseSurface = inverseSurfaceLightHighContrast,
-    inverseOnSurface = inverseOnSurfaceLightHighContrast,
-    inversePrimary = inversePrimaryLightHighContrast,
-    surfaceDim = surfaceDimLightHighContrast,
-    surfaceBright = surfaceBrightLightHighContrast,
-    surfaceContainerLowest = surfaceContainerLowestLightHighContrast,
-    surfaceContainerLow = surfaceContainerLowLightHighContrast,
-    surfaceContainer = surfaceContainerLightHighContrast,
-    surfaceContainerHigh = surfaceContainerHighLightHighContrast,
-    surfaceContainerHighest = surfaceContainerHighestLightHighContrast,
-)
-
 private val mediumContrastDarkColorScheme = darkColorScheme(
     primary = primaryDarkMediumContrast,
     onPrimary = onPrimaryDarkMediumContrast,
@@ -200,43 +167,6 @@ private val mediumContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkMediumContrast,
 )
 
-private val highContrastDarkColorScheme = darkColorScheme(
-    primary = primaryDarkHighContrast,
-    onPrimary = onPrimaryDarkHighContrast,
-    primaryContainer = primaryContainerDarkHighContrast,
-    onPrimaryContainer = onPrimaryContainerDarkHighContrast,
-    secondary = secondaryDarkHighContrast,
-    onSecondary = onSecondaryDarkHighContrast,
-    secondaryContainer = secondaryContainerDarkHighContrast,
-    onSecondaryContainer = onSecondaryContainerDarkHighContrast,
-    tertiary = tertiaryDarkHighContrast,
-    onTertiary = onTertiaryDarkHighContrast,
-    tertiaryContainer = tertiaryContainerDarkHighContrast,
-    onTertiaryContainer = onTertiaryContainerDarkHighContrast,
-    error = errorDarkHighContrast,
-    onError = onErrorDarkHighContrast,
-    errorContainer = errorContainerDarkHighContrast,
-    onErrorContainer = onErrorContainerDarkHighContrast,
-    background = backgroundDarkHighContrast,
-    onBackground = onBackgroundDarkHighContrast,
-    surface = surfaceDarkHighContrast,
-    onSurface = onSurfaceDarkHighContrast,
-    surfaceVariant = surfaceVariantDarkHighContrast,
-    onSurfaceVariant = onSurfaceVariantDarkHighContrast,
-    outline = outlineDarkHighContrast,
-    outlineVariant = outlineVariantDarkHighContrast,
-    scrim = scrimDarkHighContrast,
-    inverseSurface = inverseSurfaceDarkHighContrast,
-    inverseOnSurface = inverseOnSurfaceDarkHighContrast,
-    inversePrimary = inversePrimaryDarkHighContrast,
-    surfaceDim = surfaceDimDarkHighContrast,
-    surfaceBright = surfaceBrightDarkHighContrast,
-    surfaceContainerLowest = surfaceContainerLowestDarkHighContrast,
-    surfaceContainerLow = surfaceContainerLowDarkHighContrast,
-    surfaceContainer = surfaceContainerDarkHighContrast,
-    surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
-    surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
-)
 
 @Immutable
 data class ColorFamily(
@@ -252,24 +182,37 @@ val unspecified_scheme = ColorFamily(
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean=false,
-    // Dynamic color is available on Android 12+
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = true,
     content: @Composable() () -> Unit
 ) {
+    // Create a state to hold the theme preference
+    val context = LocalContext.current
+    val themePreference = remember { mutableStateOf("light") }
 
+    // Load the stored theme preference from DataStore
+    LaunchedEffect(Unit) {
+        getThemePreference(context).collect { savedTheme ->
+            themePreference.value = savedTheme
+        }
+    }
 
-    val colorScheme = if (darkTheme) darkScheme else lightScheme
+    // Determine the current theme (dark or light) based on saved preference
+    val isDarkTheme = if (themePreference.value == "dark") true else false
 
+    // Set the color scheme based on the theme
+    val colorScheme = if (isDarkTheme) mediumContrastDarkColorScheme else mediumContrastLightColorScheme
+
+    // System UI controller to update status and navigation bar colors
     val systemUiController: SystemUiController = rememberSystemUiController()
-
     systemUiController.setSystemBarsColor(
-        color = if (darkTheme) Color.Black else Color.White
+        color = if (isDarkTheme) Color.Black else Color.White
     )
     systemUiController.setNavigationBarColor(
-        color = if (darkTheme) Color.White else Color.Black
+        color = if (isDarkTheme) Color.White else Color.Black
     )
 
+    // Apply the MaterialTheme with the selected color scheme
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
