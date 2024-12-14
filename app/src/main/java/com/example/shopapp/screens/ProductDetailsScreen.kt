@@ -133,33 +133,38 @@ fun ProductDetailsScreen(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.ExtraBold,
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "${productData.price} €",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            StarRatingBar(
-                                maxStars = 5,
-                                rating = rating,
-                                onRatingChanged = {
-                                    rating = it
-                                }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "(${productData.reviews.size} reviews)",
+                                text = "${productData.price} €",
                                 color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
                             )
+//                        Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                StarRatingBar(
+                                    maxStars = 5,
+                                    rating = rating,
+                                    onRatingChanged = {
+                                        rating = it
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "(${productData.reviews.size} reviews)",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Color",
                             color = MaterialTheme.colorScheme.onBackground,
@@ -180,7 +185,7 @@ fun ProductDetailsScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                         }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         RoundedTabs(productData)
 
                     }
@@ -333,7 +338,8 @@ fun RoundedTabs(product: Product) {
                         // Text review
                         Text(
                             text = "• ${review.review}",
-                            modifier = Modifier.weight(1f),  // Allow text to take up available space
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onBackground,// Allow text to take up available space
                             style = MaterialTheme.typography.labelLarge
                         )
 
@@ -355,22 +361,22 @@ fun SpecificationsContent(specifications: Specifications) {
     Column(modifier = Modifier.padding(16.dp)) {
         // Check if each specification exists and display it as a bullet point
         specifications.display?.let {
-            Text(text = "• Display: $it")
+            Text(text = "• Display: $it", color = MaterialTheme.colorScheme.onBackground)
         }
         specifications.processor?.let {
-            Text(text = "• Processor: $it")
+            Text(text = "• Processor: $it", color = MaterialTheme.colorScheme.onBackground)
         }
         specifications.camera?.let {
-            Text(text = "• Camera: $it")
+            Text(text = "• Camera: $it", color = MaterialTheme.colorScheme.onBackground)
         }
         specifications.battery?.let {
-            Text(text = "• Battery: $it")
+            Text(text = "• Battery: $it", color = MaterialTheme.colorScheme.onBackground)
         }
         specifications.ram?.let {
-            Text(text = "• RAM: $it")
+            Text(text = "• RAM: $it", color = MaterialTheme.colorScheme.onBackground)
         }
         specifications.specialFeature?.let {
-            Text(text = "• Special Feature: $it")
+            Text(text = "• Special Feature: $it", color = MaterialTheme.colorScheme.onBackground)
         }
     }
 }
@@ -391,7 +397,6 @@ fun QuantitySelector(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
             .background(Color.Transparent)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -2,21 +2,26 @@ package com.example.shopapp.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-
+import com.google.firebase.database.IgnoreExtraProperties
+@IgnoreExtraProperties
 data class Rating(
-    val rating: Int = 0,       // Rating value from 1 to 5
+    val userId: String = "",
+    val rating: Float = 0f,       // Rating value from 1 to 5
     val review: String = ""    // Review text
 )
-
+@IgnoreExtraProperties
 data class Specifications(
     val display: String = "",
     val processor: String = "",
     val camera: String = "",
     val battery: String = "",
-    val ram: String = "",  // Optional, for phones that have RAM specified
-    val specialFeature: String = ""  // Optional, for phones with special features like S Pen
+    val ram: String = "",
+    val specialFeature: String = "",
+    val pages: Int = 0,
+    val publisher: String = "",
+    val language: String = ""
 )
-
+@IgnoreExtraProperties
 data class Product(
     val name: String = "",
     val imageUrl: String = "",
@@ -27,5 +32,5 @@ data class Product(
     val specifications: Specifications = Specifications(),  // Specifications object
     val reviews: List<Rating> = emptyList(),  // List of Rating objects
     val selectedColor: String = "",
-    var quantity: MutableState<Int> = mutableStateOf(0)
+    var quantity: Int = 0
 )

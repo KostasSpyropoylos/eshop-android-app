@@ -26,11 +26,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.shopapp.data.NavItem
+import com.example.shopapp.data.Product
+import com.example.shopapp.data.Rating
+import com.example.shopapp.data.Specifications
+import com.example.shopapp.preferences.getThemePreference
 import com.example.shopapp.screens.QuantitySelector
 import com.example.shopapp.viewmodels.AuthState
 import com.example.shopapp.viewmodels.AuthViewModel
@@ -39,6 +44,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
+
+    val firestore = FirebaseFirestore.getInstance()
 
     val navItemList = listOf(
         NavItem("Home", Icons.Outlined.Home),
@@ -53,7 +60,8 @@ fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     val authState = authViewModel.authState.observeAsState()
     val showBottomBar = remember { mutableStateOf(true) }
-
+    val context = LocalContext.current
+    val themePreference = remember { mutableStateOf("light") }
     // Update bottom bar visibility based on authentication state and navigation
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -62,12 +70,21 @@ fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
     }
 
+
+    // Initialize the theme from DataStore when the app starts
+    LaunchedEffect(Unit) {
+        getThemePreference(context).collect { savedTheme ->
+            themePreference.value = savedTheme
+        }
+    }
+
     // Observe navigation changes to conditionally hide the bottom bar
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
 
-// Hide bottom bar on specific routes
+
+    // Hide bottom bar on specific routes
     showBottomBar.value = when (currentRoute) {
         "login", "signup", "product-details/{productName}","CART" -> false
         else -> true

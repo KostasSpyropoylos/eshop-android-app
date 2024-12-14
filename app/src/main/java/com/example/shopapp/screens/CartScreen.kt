@@ -2,6 +2,7 @@ package com.example.shopapp.screens
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,11 +23,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -42,9 +47,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.DarkGray
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -83,7 +91,7 @@ fun CartScreen(
                     productName to quantity
                 }.filter { it.first != null }
 
-                cartItems.forEachIndexed { index, (productName, quantity) ->
+                cartItems.forEachIndexed { index, (productName,quantity) ->
                     db.collection("products")
                         .whereEqualTo("name", productName)  // Assuming "name" is the key
                         .get()
@@ -91,7 +99,7 @@ fun CartScreen(
                             for (doc in productResult) {
                                 val product = doc.toObject(Product::class.java)
                                 product?.quantity =
-                                    mutableStateOf(quantity)  // Set the quantity field
+                                   quantity // Set the quantity fiel
                                 productList.add(product)
                             }
                             if (index == cartItems.size - 1) {
@@ -120,12 +128,12 @@ fun CartScreen(
         } else {
             LazyColumn(
                 modifier = modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+                    .padding(start = 0.dp, end = 16.dp, top = 16.dp, bottom = 0.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp)
             ) {
                 items(productList) { product ->
-                    var quantity by product.quantity
+                    val quantity = remember { mutableIntStateOf(product.quantity) }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -134,18 +142,18 @@ fun CartScreen(
                     ) {
                         // Left Column for Product Image
                         Column {
-                            // Uncomment if AsyncImage is needed
-                            // AsyncImage(
-                            //     model = ImageRequest.Builder(LocalContext.current)
-                            //         .data(product.imageUrl)
-                            //         .crossfade(true)
-                            //         .build(),
-                            //     contentDescription = product.name,
-                            //     modifier = Modifier
-                            //         .aspectRatio(1f)
-                            //         .clip(RoundedCornerShape(8.dp)),
-                            //     contentScale = ContentScale.Crop
-                            // )
+                             AsyncImage(
+                                 model = ImageRequest.Builder(LocalContext.current)
+                                     .data(product.imageUrl)
+                                     .crossfade(true)
+                                     .build(),
+                                 contentDescription = product.name,
+                                 modifier = Modifier
+                                     .size(120.dp)
+                                     .aspectRatio(1f)
+                                     .clip(RoundedCornerShape(8.dp)),
+                                 contentScale = ContentScale.Crop
+                             )
                         }
 
                         // Middle Column for Text Details
@@ -160,7 +168,7 @@ fun CartScreen(
                                 text = product.name,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontSize = 20.sp,
-                                maxLines = 2, // Limits to 2 lines and wraps text
+                                maxLines = 3, // Limits to 2 lines and wraps text
                                 overflow = TextOverflow.Ellipsis, // Adds ellipsis if text is too long
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -185,46 +193,78 @@ fun CartScreen(
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Button(
-                                onClick = {
-                                    quantity--
-                                    updateCart(
-                                        product = product,
-                                        userId = userId!!,
-                                        productList
-                                    )
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                shape = CircleShape,
-                                modifier = Modifier
-                                    .size(70.dp)
-                                    .padding(8.dp)
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.onBackground,
-                                        CircleShape
-                                    )
-                            ) {
-                                Text(
-                                    "-",
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 18.sp
-                                )
-                            }
+                            if (quantity.intValue <= 1) {
+                                Button(
+                                    onClick = {
+                                        quantity.intValue--
+                                        updateCart(
+                                            product = product,
+                                            userId = userId!!,
+                                            quantity.intValue,
+                                            productList,
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    shape = CircleShape,
+                                    modifier = Modifier
 
+
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = "Icon",
+                                        modifier = Modifier
+                                            .size(35.dp)
+                                            .rotate(0f) // The icon remains in its original orientation.
+                                            .scale(.75f),
+                                        tint = Color.Red,
+                                    )
+                                }
+                            } else {
+                                Button(
+                                    onClick = {
+                                        quantity.intValue--
+                                        updateCart(
+                                            product = product,
+                                            userId = userId!!,
+                                            quantity.intValue,
+                                            productList,
+
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    shape = CircleShape,
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .padding(8.dp)
+                                        .border(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.onBackground,
+                                            CircleShape
+                                        )
+                                ) {
+                                    Text(
+                                        "-",
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        fontSize = 18.sp
+                                    )
+                                }
+                            }
                             Text(
                                 textAlign = TextAlign.Center,
-                                text = quantity.toString(),
+                                text = quantity.intValue.toString(),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 18.sp
                             )
 
                             Button(
                                 onClick = {
-                                    quantity++
+                                    quantity.intValue++
                                     updateCart(
                                         product = product,
-                                        userId = userId!!
+                                        userId = userId!!,
+                                        quantity.intValue
                                     )
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -240,6 +280,7 @@ fun CartScreen(
                             ) {
                                 Text(
                                     "+",
+                                    textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 18.sp
                                 )
@@ -247,12 +288,18 @@ fun CartScreen(
                         }
                     }
                     Spacer(Modifier.height(10.dp))
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(30f, 15f), 0f)
+                    Canvas(
+                        Modifier.fillMaxWidth()
+                    ) {
+                        drawLine(
+                            color = Color.DarkGray,
+                            strokeWidth = 8f,
+                            start = Offset(20f, 0f),
+                            end = Offset(size.width - 20, 0f),
+                            pathEffect = pathEffect
+                        )
+                    }
                 }
             }
             TotalPrice(modifier, productList)
@@ -293,12 +340,12 @@ fun TotalPrice(
 fun calculateTotalPrice(productList: List<Product>): Double {
     var totalPrice = 0.0;
     productList.forEach { product ->
-        totalPrice += product.price * product.quantity.value
+        totalPrice += product.price * product.quantity
     }
     return totalPrice
 }
 
-fun updateCart(product: Product, userId: String, productList: MutableList<Product>?=null) {
+fun updateCart(product: Product, userId: String,quantity: Int, productList: MutableList<Product>? = null) {
     val db = FirebaseFirestore.getInstance()
     db.collection("cart")
         .whereEqualTo("userId", userId)
@@ -306,10 +353,10 @@ fun updateCart(product: Product, userId: String, productList: MutableList<Produc
         .get()
         .addOnSuccessListener { result ->
             if (!result.isEmpty) {
-                if (product.quantity.value > 0) {
+                if (quantity > 0) {
                     val docId = result.documents.first().id
                     db.collection("cart").document(docId)
-                        .update("quantity", product.quantity.value)
+                        .update("quantity", quantity)
                         .addOnSuccessListener {
                             Log.d("Firestore", "Cart updated successfully")
                         }
