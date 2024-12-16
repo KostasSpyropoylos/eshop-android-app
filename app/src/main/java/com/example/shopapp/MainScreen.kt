@@ -91,8 +91,8 @@ fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {},
+        modifier = modifier.fillMaxSize(),
+
         bottomBar = {
             if (showBottomBar.value) {
                 NavigationBar {
@@ -123,9 +123,9 @@ fun MainScreen(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = modifier.fillMaxSize()) {
             Navigation(
-                modifier = Modifier.padding(innerPadding),
+                modifier = modifier.padding(innerPadding),
                 navController = navController,
                 authViewModel = authViewModel,
             )
