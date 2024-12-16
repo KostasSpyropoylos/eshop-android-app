@@ -14,6 +14,7 @@ import com.example.shopapp.screens.ProductDetailsScreen
 import com.example.shopapp.screens.ProductListScreen
 import com.example.shopapp.screens.auth.LoginScreen
 import com.example.shopapp.screens.SettingsScreen
+import com.example.shopapp.screens.TopDealsScreen
 import com.example.shopapp.screens.auth.SignUpScreen
 import com.example.shopapp.viewmodels.AuthViewModel
 @Composable
@@ -37,6 +38,9 @@ fun Navigation(modifier: Modifier = Modifier, navController: NavHostController, 
         }
         composable(route = com.example.shopapp.NavItem.SETTINGS.name) {
             SettingsScreen(modifier,navController,authViewModel)
+        }
+        composable(route = "top-deals") {
+            TopDealsScreen(modifier,navController,authViewModel)
         }
         composable(
             route = "category/{categoryId}",
