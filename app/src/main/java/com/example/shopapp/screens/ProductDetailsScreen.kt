@@ -1,52 +1,39 @@
 package com.example.shopapp.screens
 
-import android.graphics.fonts.FontStyle
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -72,7 +58,6 @@ import com.example.shopapp.data.Product
 import com.example.shopapp.data.Specifications
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.math.max
 
 @Composable
 fun ProductDetailsScreen(
@@ -82,9 +67,8 @@ fun ProductDetailsScreen(
 ) {
     val db = FirebaseFirestore.getInstance()
     val product = remember { mutableStateOf<Product?>(null) }
-    var rating by remember { mutableFloatStateOf(1f) }
     val selectedColor = remember { mutableStateOf("") }
-
+    val reviewAvgRating = remember { mutableFloatStateOf(0f) }
 
 
     LaunchedEffect(productName) {
@@ -96,7 +80,11 @@ fun ProductDetailsScreen(
                 if (result.documents.isNotEmpty()) {
                     val dataModal: Product = result.documents[0].toObject(Product::class.java)!!
                     product.value = dataModal
-                    selectedColor.value = dataModal.colors[0]
+                    if (dataModal.colors.isNotEmpty()) {
+                        selectedColor.value = dataModal.colors[0]
+                    }
+                    reviewAvgRating.floatValue =
+                        dataModal.reviews.map { it.rating }.average().toFloat()
                 }
             }
             .addOnFailureListener { e ->
@@ -138,6 +126,15 @@ fun ProductDetailsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            if (productData.discountedPrice != null) {
+                                Text(
+                                    text = "${productData.discountedPrice} €",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                             Text(
                                 text = "${productData.price} €",
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -152,9 +149,9 @@ fun ProductDetailsScreen(
                             ) {
                                 StarRatingBar(
                                     maxStars = 5,
-                                    rating = rating,
+                                    rating = reviewAvgRating.floatValue,
                                     onRatingChanged = {
-                                        rating = it
+                                        reviewAvgRating.floatValue = it
                                     }
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -165,24 +162,27 @@ fun ProductDetailsScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Color",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row() {
-                            productData.colors.forEach { color ->
-                                RingSample(
-                                    color = color,
-                                    isSelected = selectedColor.value == color,
-                                    onClick = {
-                                        selectedColor.value = color
-                                    }
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+                        if (productData.colors.isNotEmpty()) {
+                            Text(
+                                text = "Color",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row() {
+
+                                productData.colors.forEach { color ->
+                                    RingSample(
+                                        color = color,
+                                        isSelected = selectedColor.value == color,
+                                        onClick = {
+                                            selectedColor.value = color
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -358,25 +358,26 @@ fun RoundedTabs(product: Product) {
 
 @Composable
 fun SpecificationsContent(specifications: Specifications) {
+    val specificationsMap = mapOf(
+        "Display" to specifications.display,
+        "Processor" to specifications.processor,
+        "Camera" to specifications.camera,
+        "Battery" to specifications.battery,
+        "RAM" to specifications.ram,
+        "Special Feature" to specifications.specialFeature,
+        "Pages" to if (specifications.pages > 0) specifications.pages.toString() else "",
+        "Publisher" to specifications.publisher,
+        "Language" to specifications.language
+    )
+
     Column(modifier = Modifier.padding(16.dp)) {
-        // Check if each specification exists and display it as a bullet point
-        specifications.display?.let {
-            Text(text = "• Display: $it", color = MaterialTheme.colorScheme.onBackground)
-        }
-        specifications.processor?.let {
-            Text(text = "• Processor: $it", color = MaterialTheme.colorScheme.onBackground)
-        }
-        specifications.camera?.let {
-            Text(text = "• Camera: $it", color = MaterialTheme.colorScheme.onBackground)
-        }
-        specifications.battery?.let {
-            Text(text = "• Battery: $it", color = MaterialTheme.colorScheme.onBackground)
-        }
-        specifications.ram?.let {
-            Text(text = "• RAM: $it", color = MaterialTheme.colorScheme.onBackground)
-        }
-        specifications.specialFeature?.let {
-            Text(text = "• Special Feature: $it", color = MaterialTheme.colorScheme.onBackground)
+        specificationsMap.forEach { (label, value) ->
+            if (value.isNotBlank()) {
+                Text(
+                    text = "• $label: $value",
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }
