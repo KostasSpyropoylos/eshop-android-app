@@ -2,6 +2,7 @@ package com.example.shopapp.screens
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
@@ -55,6 +58,9 @@ import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,6 +69,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.shopapp.R
 import com.example.shopapp.data.Product
 import com.example.shopapp.viewmodels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -85,25 +92,34 @@ fun CartScreen(
             .whereEqualTo("userId", userId)
             .get()
             .addOnSuccessListener { result ->
-                val cartItems = result.documents.map { doc ->
+                val cartItems = result.documents.mapNotNull { doc ->
                     val productName = doc.getString("productName")
+                    val selectedColor = doc.getString("selectedColor")
                     val quantity = doc.getLong("quantity")?.toInt() ?: 0
-                    productName to quantity
-                }.filter { it.first != null }
 
-                cartItems.forEachIndexed { index, (productName,quantity) ->
+                    // Only include items with valid productName
+                    if (productName != null) {
+                        Triple(productName, quantity, selectedColor)
+                    } else {
+                        null
+                    }
+                }
+
+                cartItems.forEachIndexed { index, (productName, quantity, selectedColor) ->
                     db.collection("products")
-                        .whereEqualTo("name", productName)  // Assuming "name" is the key
+                        .whereEqualTo("name", productName) // Assuming "name" is the key
                         .get()
                         .addOnSuccessListener { productResult ->
                             for (doc in productResult) {
                                 val product = doc.toObject(Product::class.java)
-                                product?.quantity =
-                                   quantity // Set the quantity fiel
+                                product.quantity = quantity
+                                if (selectedColor != null) {
+                                    product.selectedColor = selectedColor
+                                }
                                 productList.add(product)
                             }
                             if (index == cartItems.size - 1) {
-                                isLoading.value = false  // Loading complete
+                                isLoading.value = false // Loading complete
                             }
                         }
                         .addOnFailureListener { e ->
@@ -127,10 +143,10 @@ fun CartScreen(
             }
         } else {
             LazyColumn(
-                modifier = modifier
-                    .padding(start = 0.dp, end = 16.dp, top = 16.dp, bottom = 0.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp)
+                modifier = modifier.fillMaxWidth()
+                    .padding(start = 0.dp, end = 0.dp, top = 16.dp, bottom = 0.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 20.dp)
             ) {
                 items(productList) { product ->
                     val quantity = remember { mutableIntStateOf(product.quantity) }
@@ -149,7 +165,7 @@ fun CartScreen(
                                      .build(),
                                  contentDescription = product.name,
                                  modifier = Modifier
-                                     .size(120.dp)
+                                     .size(100.dp)
                                      .aspectRatio(1f)
                                      .clip(RoundedCornerShape(8.dp)),
                                  contentScale = ContentScale.Crop
@@ -166,31 +182,36 @@ fun CartScreen(
                         ) {
                             Text(
                                 text = product.name,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontSize = 16.sp,
                                 maxLines = 3, // Limits to 2 lines and wraps text
                                 overflow = TextOverflow.Ellipsis, // Adds ellipsis if text is too long
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                fontWeight = FontWeight.Bold,
+
                             )
-                            Text(
-                                text = product.selectedColor,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 20.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            getColorName(product.selectedColor)?.let {
+
+                                Text(
+                                    text = it,
+                                    fontSize = 16.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                             Text(
                                 text = "${product.price}€",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 20.sp,
-                                modifier = Modifier.fillMaxWidth()
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontSize = 16.sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                fontWeight = FontWeight.ExtraBold,
                             )
                         }
 
                         // Right Column for Quantity Controls
                         Column(
-                            verticalArrangement = Arrangement.Top,
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (quantity.intValue <= 1) {
@@ -204,21 +225,13 @@ fun CartScreen(
                                             productList,
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
                                     shape = CircleShape,
-                                    modifier = Modifier
-
-
+                                    border= BorderStroke(1.dp,Color.Red,),
+                                    contentPadding = PaddingValues(0.dp),  //avoid the little icon
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = "Icon",
-                                        modifier = Modifier
-                                            .size(35.dp)
-                                            .rotate(0f) // The icon remains in its original orientation.
-                                            .scale(.75f),
-                                        tint = Color.Red,
-                                    )
+                                    Icon(Icons.Outlined.Delete, contentDescription = "content description")
                                 }
                             } else {
                                 Button(
@@ -232,58 +245,36 @@ fun CartScreen(
 
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
                                     shape = CircleShape,
-                                    modifier = Modifier
-                                        .size(70.dp)
-                                        .padding(8.dp)
-                                        .border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.onBackground,
-                                            CircleShape
-                                        )
+                                    border= BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground,),
+                                    contentPadding = PaddingValues(0.dp),  //avoid the little icon
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor =  MaterialTheme.colorScheme.onBackground)
                                 ) {
-                                    Text(
-                                        "-",
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        fontSize = 18.sp
-                                    )
+                                    Icon(painter= painterResource(R.drawable.outline_remove_24), contentDescription = "content description")
                                 }
                             }
                             Text(
-                                textAlign = TextAlign.Center,
+                                textAlign = TextAlign.Start,
                                 text = quantity.intValue.toString(),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 18.sp
                             )
-
-                            Button(
-                                onClick = {
-                                    quantity.intValue++
-                                    updateCart(
-                                        product = product,
-                                        userId = userId!!,
-                                        quantity.intValue
-                                    )
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                shape = CircleShape,
-                                modifier = Modifier
-                                    .size(70.dp)
-                                    .padding(8.dp)
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.onBackground,
-                                        CircleShape
-                                    )
-                            ) {
-                                Text(
-                                    "+",
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 18.sp
+                            OutlinedButton(onClick = {
+                                quantity.intValue++
+                                updateCart(
+                                    product = product,
+                                    userId = userId!!,
+                                    quantity.intValue
                                 )
+                            },
+                                modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
+                                shape = CircleShape,
+                                border= BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground,),
+                                contentPadding = PaddingValues(0.dp),  //avoid the little icon
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor =  MaterialTheme.colorScheme.onBackground)
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "content description")
                             }
                         }
                     }
@@ -300,6 +291,7 @@ fun CartScreen(
                             pathEffect = pathEffect
                         )
                     }
+                    Spacer(Modifier.height(10.dp))
                 }
             }
             TotalPrice(modifier, productList)
@@ -307,7 +299,9 @@ fun CartScreen(
         }
     }
 }
-
+private fun String.fromHex(color: String): Color {
+    return Color(android.graphics.Color.parseColor(color))
+}
 @Composable
 fun TotalPrice(
     modifier: Modifier = Modifier,
@@ -375,3 +369,28 @@ fun updateCart(product: Product, userId: String,quantity: Int, productList: Muta
             Log.w("Firestore", "Error finding cart item", e)
         }
 }
+
+
+val colorNameMap = mapOf(
+    "#000000" to "Black",
+    "#FFFFFF" to "White",
+    "#2C6BCF" to "Blue",
+    "#4285F4" to "Blue",
+    "#4682B4" to "Light Blue",
+    "#FFD700" to "Yellow",
+    "#FBBC04" to "Yellow",
+    "#D75B5B" to "Red",
+    "#EA4335" to "Red",
+    "#A1A1A1" to "Gray",
+    "#808080" to "Gray",
+    "#5A5A5A" to "Space Gray",
+    "#32CD32" to "Green",
+    "#34A853" to "Green",
+
+    // Add more colors as needed
+)
+
+fun getColorName(hex: String): String? {
+    return colorNameMap[hex.toUpperCase()]
+}
+
