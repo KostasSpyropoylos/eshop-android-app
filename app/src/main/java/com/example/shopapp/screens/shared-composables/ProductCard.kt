@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,11 +21,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,20 +43,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import androidx.wear.compose.material.Text
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.shopapp.data.Product
+import com.example.shopapp.screens.calculateDiscountPercentage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.max
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DynamicVerticalGrid(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     productList: List<Product>,
     navController: NavController
 ) {
@@ -63,19 +73,54 @@ fun DynamicVerticalGrid(
     val minCellWidth = 150.dp
 
     val columns = max(1, (availableWidth / (minCellWidth + itemSpacing)).toInt())
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columns),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-        verticalArrangement = Arrangement.spacedBy(itemSpacing),
-        modifier = modifier
+
+
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredProducts = productList.filter { product ->
+        searchQuery.isEmpty() || product.name.contains(searchQuery, ignoreCase = true) ||
+                product.description.contains(searchQuery, ignoreCase = true) ||
+                product.categoryId.contains(searchQuery, ignoreCase = true) ||
+                product.colors.any { it.contains(searchQuery, ignoreCase = true) }
+    }
+
+    Column(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(top = 8.dp) // Ensure no extra margin is added at the top
     ) {
-        items(productList) { product ->
-            ProductCard(product, navController)
+        SearchBar(
+            modifier = Modifier
+                .fillMaxWidth(), // Padding around the search bar
+            query = "",
+            onQueryChange = {},
+            onSearch = {},
+            active = false,
+            onActiveChange = {},
+            placeholder = { Text("Search") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {}
+        ) {}
+
+        // Wrapping LazyVerticalGrid in a Box ensures scrolling works properly
+//        Box(
+//            modifier = modifier
+//                .fillMaxSize() // Makes the grid fill the remaining space
+//        )
+//        {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+//                contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier.fillMaxSize()
+        ) {
+            items(productList) { product ->
+                ProductCard(product, navController)
+            }
+//            }
         }
     }
+
 }
 
 @Composable
@@ -89,6 +134,7 @@ fun ProductCard(product: Product, navController: NavController) {
     // Perform Firestore query only when product is passed or when product changes
     LaunchedEffect(product.name) {
         db.collection("favorites")
+            .whereEqualTo("userId", userId)
             .whereEqualTo("productName", product.name)
             .get()
             .addOnSuccessListener { result ->
@@ -135,8 +181,26 @@ fun ProductCard(product: Product, navController: NavController) {
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit
                     )
+                    if (product.discountedPrice > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            androidx.compose.material3.Text(
+                                text = "-${calculateDiscountPercentage(product)}%",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = {
                             if (isFavorite) {
@@ -193,13 +257,18 @@ fun ProductCard(product: Product, navController: NavController) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = product.name,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${product.price}€",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "${product.price}€",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                 }
             }
         }
