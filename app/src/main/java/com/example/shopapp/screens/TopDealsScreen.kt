@@ -44,7 +44,7 @@ fun TopDealsScreen(
     }
     var products =  productList.sortedByDescending  { calculateDiscountPercentage(it) }
 
-    DynamicVerticalGrid(Modifier,products,navController)
+    DynamicVerticalGrid(modifier,products,navController)
 }
 
 fun calculateDiscountPercentage(product: Product): Float {

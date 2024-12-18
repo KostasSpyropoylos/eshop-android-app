@@ -61,10 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.example.shopapp.R
-import com.example.shopapp.data.Product
 import com.example.shopapp.data.ProductDTO
 import com.example.shopapp.viewmodels.AuthViewModel
 import com.google.firebase.firestore.FirebaseFirestore
@@ -72,7 +69,7 @@ import kotlinx.coroutines.CompletableDeferred
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier, navController: NavController,
+    modifier: Modifier, navController: NavController,
     authViewModel: AuthViewModel
 ) {
     val db = FirebaseFirestore.getInstance()
@@ -134,18 +131,19 @@ fun HomeScreen(
         }
     } else {
         LazyColumn(
-            modifier
-                .fillMaxSize(),
+            modifier = modifier.fillMaxWidth()
+                .padding(start = 0.dp, end = 0.dp, top = 30.dp, bottom = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 20.dp)
         ) {
             item {
                 Row(
                     Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp, 25.dp),
+                        .fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 5.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Top Deals", fontSize = 20.sp)
+                    Text(text = "Top deals", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text(
                         text = "See all",
                         fontSize = 16.sp,
@@ -260,7 +258,7 @@ fun TopDeals(
                     )
 
                     Text(
-                        text = product?.discountedPrice.toString() + "€",
+                        text = product.discountedPrice.toString() + "€",
                         overflow = Ellipsis,
                         maxLines = 2,
                         textAlign = TextAlign.Center,

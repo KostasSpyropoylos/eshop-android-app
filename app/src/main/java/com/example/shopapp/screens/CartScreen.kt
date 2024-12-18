@@ -144,7 +144,7 @@ fun CartScreen(
         } else {
             LazyColumn(
                 modifier = modifier.fillMaxWidth()
-                    .padding(start = 0.dp, end = 0.dp, top = 16.dp, bottom = 0.dp),
+                    .padding(start = 0.dp, end = 0.dp, top = 30.dp, bottom = 0.dp),
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 20.dp)
             ) {

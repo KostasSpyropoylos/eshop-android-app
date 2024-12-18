@@ -47,7 +47,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -124,9 +128,10 @@ fun ProductDetailsScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (productData.discountedPrice != null) {
+                            if (productData.discountedPrice >0) {
                                 Text(
                                     text = "${productData.discountedPrice} €",
                                     color = MaterialTheme.colorScheme.primary,
@@ -134,15 +139,24 @@ fun ProductDetailsScreen(
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                 )
+                                Text(
+                                    text = productData.price.toString() + "€",
+                                    overflow = Ellipsis,
+                                    style = TextStyle(textDecoration = TextDecoration.LineThrough),
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+
+                            }else{
+
+                                Text(
+                                    text = "${productData.price} €",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
                             }
-                            Text(
-                                text = "${productData.price} €",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-//                        Spacer(modifier = Modifier.height(8.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center

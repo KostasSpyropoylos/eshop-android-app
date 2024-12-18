@@ -18,25 +18,25 @@ import com.example.shopapp.screens.TopDealsScreen
 import com.example.shopapp.screens.auth.SignUpScreen
 import com.example.shopapp.viewmodels.AuthViewModel
 @Composable
-fun Navigation(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
+fun Navigation(modifier: Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
 
     NavHost(navController=navController, startDestination = "login", builder = {
-        composable(route = com.example.shopapp.NavItem.LOGIN.name) {
+        composable(route = "login") {
             LoginScreen(modifier,navController,authViewModel)
         }
-        composable(route = com.example.shopapp.NavItem.SIGNUP.name) {
+        composable(route = "signup") {
             SignUpScreen(modifier,navController,authViewModel)
         }
-        composable(route = com.example.shopapp.NavItem.HOME.name) {
+        composable(route = "home") {
             HomeScreen(modifier,navController,authViewModel)
         }
-        composable(route = com.example.shopapp.NavItem.FAVORITES.name) {
+        composable(route = "favorites") {
             FavoritesScreen(modifier,navController,authViewModel)
         }
-        composable(route = com.example.shopapp.NavItem.CART.name) {
+        composable(route = "cart") {
             CartScreen(modifier,navController,authViewModel)
         }
-        composable(route = com.example.shopapp.NavItem.SETTINGS.name) {
+        composable(route = "settings") {
             SettingsScreen(modifier,navController,authViewModel)
         }
         composable(route = "top-deals") {

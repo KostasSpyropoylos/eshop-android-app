@@ -14,27 +14,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,12 +66,14 @@ import com.example.shopapp.data.Product
 import com.example.shopapp.screens.calculateDiscountPercentage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DynamicVerticalGrid(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     productList: List<Product>,
     navController: NavController
 ) {
@@ -74,6 +86,9 @@ fun DynamicVerticalGrid(
 
     val columns = max(1, (availableWidth / (minCellWidth + itemSpacing)).toInt())
 
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+
 
     var searchQuery by remember { mutableStateOf("") }
     val filteredProducts = productList.filter { product ->
@@ -83,48 +98,166 @@ fun DynamicVerticalGrid(
                 product.colors.any { it.contains(searchQuery, ignoreCase = true) }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 8.dp) // Ensure no extra margin is added at the top
-    ) {
-        SearchBar(
-            modifier = Modifier
-                .fillMaxWidth(), // Padding around the search bar
-            query = "",
-            onQueryChange = {},
-            onSearch = {},
-            active = false,
-            onActiveChange = {},
-            placeholder = { Text("Search") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = {}
-        ) {}
+    val accordionData = listOf(
+        AccordionModel(
+            header = "Technology Stocks",
+            rows = listOf(
+                AccordionModel.Row(security = "Apple Inc.", price = "$175.32"),
+                AccordionModel.Row(security = "Microsoft Corp.", price = "$349.67"),
+                AccordionModel.Row(security = "NVIDIA Corp.", price = "$485.21")
+            )
+        )
+    )
 
-        // Wrapping LazyVerticalGrid in a Box ensures scrolling works properly
-//        Box(
-//            modifier = modifier
-//                .fillMaxSize() // Makes the grid fill the remaining space
-//        )
-//        {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-//                contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier.fillMaxSize()
-        ) {
-            items(productList) { product ->
-                ProductCard(product, navController)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            // Drawer Content (e.g., filters)
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .padding(16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(30.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically // Align items vertically in the center
+                ) {
+                    Text(
+                        text = "Φίλτρα",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .weight(1f) // Takes up all available space to center the text
+                            .wrapContentWidth(Alignment.CenterHorizontally) // Centers the text in its space
+                    )
+
+                    Button(
+                        onClick = {
+                            // Apply filters and close drawer
+                            coroutineScope.launch { drawerState.close() }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Icon",
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
+                }
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Accordion(Modifier, accordionData[0])
+
+                // Example fields for filtering
+                TextField(
+                    value = "",
+                    onValueChange = { /* Handle filter value */ },
+                    label = { Text("Αναζήτηση με κλειδί") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        // Apply filters and close drawer
+                        coroutineScope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Apply")
+                }
             }
-//            }
+        }
+    ) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = 0.dp)
+        ) {
+
+            // Search Bar
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                query = searchQuery,
+                onQueryChange = { query ->
+                    searchQuery = query
+                },
+                onSearch = {},
+                active = false,
+                onActiveChange = {},
+                placeholder = { Text("Search") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear Search")
+                        }
+                    }
+                }
+            ) {}
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Product Grid with Proper Scroll Handling
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 8.dp,
+                        bottom = 50.dp
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(filteredProducts) { product ->
+                        ProductCard(
+                            product,
+                            navController,
+                            modifier
+                        ) // Replace with your product display composable
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    OpenFiltersDrawer(drawerState = drawerState, coroutineScope = coroutineScope)
+                }
+
+            }
         }
     }
 
 }
 
 @Composable
-fun ProductCard(product: Product, navController: NavController) {
+fun OpenFiltersDrawer(drawerState: DrawerState, coroutineScope: CoroutineScope) {
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                drawerState.open() // Open the drawer when button is clicked
+            }
+        },
+        modifier = Modifier.padding(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = "Open Filters",
+            tint = Color.White,
+            modifier = Modifier.padding(end = 8.dp)
+        )
+        Text(text = "Φίλτρα", color = MaterialTheme.colorScheme.onBackground)
+    }
+}
+
+@Composable
+fun ProductCard(product: Product, navController: NavController, modifier: Modifier) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     val userId = FirebaseAuth.getInstance().currentUser?.uid
