@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -62,10 +63,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.shopapp.R
 import com.example.shopapp.data.ProductDTO
 import com.example.shopapp.viewmodels.AuthViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -143,9 +148,9 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Top deals", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.top_deals), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "See all",
+                        text = stringResource(R.string.see_all),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary,
@@ -162,7 +167,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Trending", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.trending), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
                 Trending(Modifier, productList, navController)
 
@@ -175,7 +180,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Shop by Category",
+                        text = stringResource(R.string.shop_by_category),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -194,6 +199,10 @@ fun TopDeals(
     navController: NavController
 ) {
     val context = LocalContext.current
+
+
+    val currentLocale = Locale.getDefault()
+    val numberFormat = NumberFormat.getInstance(currentLocale)
     var products = productList.filter { product -> product.discountedPrice > 0 }
     products = products.sortedByDescending { calculateDiscountPercentage(it).toFloat() }
     LazyRow(
@@ -240,25 +249,31 @@ fun TopDeals(
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
+                            // number formats to suppport greek locale
+
+
+                            val decimalFormat = DecimalFormat("#.##")
+                            val formattedPercentage = decimalFormat.format(calculateDiscountPercentage(product))
                             Text(
-                                text = "-${calculateDiscountPercentage(product)}%",
+                                text = "-${formattedPercentage}%",
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
                         }
                     }
+                    val formattedPrice = numberFormat.format(product.price)
                     Text(
-                        text = product.price.toString() + "€",
+                        text = formattedPrice + "€",
                         overflow = Ellipsis,
                         style = TextStyle(textDecoration = TextDecoration.LineThrough),
                         maxLines = 2,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.width(70.dp)
                     )
-
+                    val formattedDiscountedPrice = numberFormat.format(product.discountedPrice)
                     Text(
-                        text = product.discountedPrice.toString() + "€",
+                        text = formattedDiscountedPrice + "€",
                         overflow = Ellipsis,
                         maxLines = 2,
                         textAlign = TextAlign.Center,
@@ -279,6 +294,7 @@ fun Trending(
     navController: NavController
 ) {
     val context = LocalContext.current
+
     val products = productList.filter { it.isTrending }
     LazyRow(
         modifier = Modifier
@@ -348,6 +364,7 @@ fun ShopByCategory(
     categories: SnapshotStateList<Map<String, String>>,
     navController: NavController
 ) {
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -408,5 +425,5 @@ private fun calculateDiscountPercentage(product: ProductDTO): Float {
     val originalPrice = product.price
     val discountedPrice = product.discountedPrice
     val discountPercentage = ((originalPrice - discountedPrice) / originalPrice) * 100
-    return String.format("%.2f", discountPercentage).toFloat()
+    return discountPercentage
 }

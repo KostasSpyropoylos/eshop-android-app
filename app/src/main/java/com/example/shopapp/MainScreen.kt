@@ -1,10 +1,10 @@
 package com.example.shopapp
 
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
@@ -24,22 +24,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.shopapp.data.NavItem
-import com.example.shopapp.data.Product
-import com.example.shopapp.data.Rating
-import com.example.shopapp.data.Specifications
 import com.example.shopapp.preferences.getThemePreference
-import com.example.shopapp.screens.QuantitySelector
 import com.example.shopapp.viewmodels.AuthState
 import com.example.shopapp.viewmodels.AuthViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 
 
 @Composable
@@ -49,6 +42,10 @@ fun MainScreen(modifier: Modifier, authViewModel: AuthViewModel) {
     val selectedIndex = remember {
         mutableIntStateOf(0)
     }
+
+    val config: Configuration = Resources.getSystem().getConfiguration()
+    val locale: String = config.getLocales().get(0).toString()
+
 
     val navController = rememberNavController()
     val authState = authViewModel.authState.observeAsState()
@@ -76,12 +73,12 @@ fun MainScreen(modifier: Modifier, authViewModel: AuthViewModel) {
 
     LaunchedEffect(currentRoute) {
         // List of routes that are part of the bottom navigation items
-        val bottomNavRoutes = listOf("home", "favorites", "cart","settings")
+        val bottomNavRoutes = listOf("home", "favorites", "cart", "settings")
         Log.d("BottomNav", "Current Route: $currentRoute")
         // Reset the selection if we navigate to a route not in the bottom navigation items
         if (currentRoute !in bottomNavRoutes) {
             selectedIndex.intValue = -1 // Reset to no selection
-        }else {
+        } else {
             // Find the index of the selected item based on the current route
             val newIndex = bottomNavRoutes.indexOf(currentRoute)
             if (newIndex != -1) {
@@ -90,15 +87,15 @@ fun MainScreen(modifier: Modifier, authViewModel: AuthViewModel) {
         }
     }
     val navItemList = listOf(
-        NavItem("Home", Icons.Outlined.Home),
-        NavItem("Favorites", Icons.Outlined.Favorite),
-        NavItem("Cart", Icons.Outlined.ShoppingCart),
-        NavItem("Settings", Icons.Outlined.Settings),
+        NavItem(stringResource(R.string.home),"home", Icons.Outlined.Home),
+        NavItem(stringResource(R.string.favorites),"favorites", Icons.Outlined.Favorite),
+        NavItem(stringResource(R.string.cart),"cart", Icons.Outlined.ShoppingCart),
+        NavItem(stringResource(R.string.settings),"settings", Icons.Outlined.Settings),
     )
 
     // Hide bottom bar on specific routes
     showBottomBar.value = when (currentRoute) {
-        "login", "signup", "product-details/{productName}","cart" -> false
+        stringResource(R.string.login), stringResource(R.string.signup), "product-details/{productName}", "cart" -> false
         else -> true
     }
 
@@ -113,7 +110,7 @@ fun MainScreen(modifier: Modifier, authViewModel: AuthViewModel) {
                             selected = selectedIndex.intValue == index,
                             onClick = {
                                 selectedIndex.intValue = index
-                                navController.navigate(navItem.label.lowercase())
+                                navController.navigate(navItem.route.lowercase())
                             },
                             icon = {
                                 BadgedBox(badge = {
@@ -134,11 +131,12 @@ fun MainScreen(modifier: Modifier, authViewModel: AuthViewModel) {
                 }
             }
         }
-    ) { paddingValues  ->
+    ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            Navigation(modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding()),
+            Navigation(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = paddingValues.calculateBottomPadding()),
                 navController = navController,
                 authViewModel = authViewModel,
             )

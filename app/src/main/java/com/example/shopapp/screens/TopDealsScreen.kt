@@ -51,7 +51,7 @@ fun calculateDiscountPercentage(product: Product): Float {
     val originalPrice = product.price
     val discountedPrice = product.discountedPrice
     val discountPercentage = ((originalPrice - discountedPrice) / originalPrice) * 100
-    return String.format("%.2f", discountPercentage).toFloat()
+    return discountPercentage
 }
 
 

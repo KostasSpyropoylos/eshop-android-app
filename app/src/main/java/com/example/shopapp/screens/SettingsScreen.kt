@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -30,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -41,7 +44,7 @@ import com.example.shopapp.viewmodels.AuthViewModel
 
 @Composable
 fun SettingsScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier ,
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
@@ -56,7 +59,7 @@ fun SettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
-            .padding(20.dp, 10.dp, 20.dp, 10.dp)
+            .padding(20.dp, 40.dp, 20.dp, 10.dp)
     ) {
 
         item {
@@ -86,7 +89,7 @@ fun SettingsScreen(
                         )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "Region",
+                        stringResource(R.string.region),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -139,7 +142,7 @@ fun SettingsScreen(
                         )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "Language",
+                        stringResource(R.string.language),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -162,6 +165,9 @@ fun SettingsScreen(
                     )
 
                 }
+                val languages = mapOf("English" to "en", "Español" to "es", "Français" to "fr")
+
+
             }
         }
 
@@ -193,7 +199,7 @@ fun SettingsScreen(
                         )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "Night Mode",
+                        stringResource(R.string.theme_mode),
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -224,7 +230,7 @@ fun SettingsScreen(
 
                     border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary),
                     content = {
-                        Text(text = "Sign out")
+                        Text(stringResource(R.string.signout))
                     })
             }
         }

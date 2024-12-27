@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">ShopApp</string>
+    <string name="home">Αρχική</string>
+    <string name="favorites">Αγαπημένα</string>
+    <string name="cart">Καλάθι</string>
+    <string name="settings">Ρυθμίσεις</string>
+    <string name="top_deals">Προσφορές</string>
+    <string name="see_all">Προβολή όλων</string>
+    <string name="trending">Δημοφιλή</string>
+    <string name="shop_by_category">Κατηγορίες</string>
+    <string name="filters">Φίλτρα</string>
+    <string name="search">Αναζήτηση</string>
+    <string name="apply">Εφαρμογή</string>
+    <string name="no_products_found">Δεν βρέθηκαν προϊόντα στο καλάθι</string>
+    <string name="order_total">Σύνολο:</string>
+    <string name="selected">Επιλεγμένο</string>
+    <string name="removed_from_favorites">Αφαιρέθηκε απο τα αγαπημένα</string>
+    <string name="added_to_favorites">Προστέθηκε στα αγαπημένα</string>
+    <string name="region">Περιοχή</string>
+    <string name="language">Γλώσσα</string>
+    <string name="theme_mode">Θέμα</string>
+    <string name="signout">Αποσύνδεση</string>
+    <string name="color_black">Μαύρο</string>
+    <string name="color_white">Λευκό</string>
+    <string name="color_blue">Μπλέ</string>
+    <string name="color_light_blue">Ανοιχτό Μπλέ</string>
+    <string name="color_yellow">Κίτρινο</string>
+    <string name="color_red">Κόκκινο</string>
+    <string name="color_gray">Γκρί</string>
+    <string name="color_space_gray">Σπέις Γκρί</string>
+    <string name="color_green">Πράσινο</string>
+    <string name="login">Σύνδεση</string>
+    <string name="signup">Εγγραφή</string>
+</resources>

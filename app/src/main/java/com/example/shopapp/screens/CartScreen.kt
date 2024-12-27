@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -139,7 +140,7 @@ fun CartScreen(
         // Render the product list after fetching data
         if (productList.isEmpty() && !isLoading.value) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "No products found in the cart.")
+                Text(text = stringResource(R.string.no_products_found)+".")
             }
         } else {
             LazyColumn(
@@ -317,7 +318,7 @@ fun TotalPrice(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Order Total:",
+                stringResource(R.string.order_total),
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(10.dp)
@@ -372,25 +373,25 @@ fun updateCart(product: Product, userId: String,quantity: Int, productList: Muta
 
 
 val colorNameMap = mapOf(
-    "#000000" to "Black",
-    "#FFFFFF" to "White",
-    "#2C6BCF" to "Blue",
-    "#4285F4" to "Blue",
-    "#4682B4" to "Light Blue",
-    "#FFD700" to "Yellow",
-    "#FBBC04" to "Yellow",
-    "#D75B5B" to "Red",
-    "#EA4335" to "Red",
-    "#A1A1A1" to "Gray",
-    "#808080" to "Gray",
-    "#5A5A5A" to "Space Gray",
-    "#32CD32" to "Green",
-    "#34A853" to "Green",
+    "#000000" to "${R.string.color_black}",
+    "#FFFFFF" to "${R.string.color_white}",
+    "#2C6BCF" to "${R.string.color_blue}",
+    "#4285F4" to "${R.string.color_blue}",
+    "#4682B4" to "${R.string.color_light_blue}",
+    "#FFD700" to "${R.string.color_yellow}",
+    "#FBBC04" to "${R.string.color_yellow}",
+    "#D75B5B" to "${R.string.color_red}",
+    "#EA4335" to "${R.string.color_red}",
+    "#A1A1A1" to "${R.string.color_gray}",
+    "#808080" to "${R.string.color_gray}",
+    "#5A5A5A" to "${R.string.color_space_gray}",
+    "#32CD32" to "${R.string.color_green}",
+    "#34A853" to "${R.string.color_green}",
 
     // Add more colors as needed
 )
 
 fun getColorName(hex: String): String? {
-    return colorNameMap[hex.toUpperCase()]
+    return colorNameMap[hex.uppercase()]
 }
 

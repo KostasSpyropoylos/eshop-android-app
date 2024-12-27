@@ -62,12 +62,14 @@ import androidx.navigation.NavController
 import androidx.wear.compose.material.Text
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.shopapp.R
 import com.example.shopapp.data.Product
 import com.example.shopapp.screens.calculateDiscountPercentage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,7 +129,7 @@ fun DynamicVerticalGrid(
                     verticalAlignment = Alignment.CenterVertically // Align items vertically in the center
                 ) {
                     Text(
-                        text = "Φίλτρα",
+                        text = stringResource(R.string.filters),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .weight(1f) // Takes up all available space to center the text
@@ -158,7 +160,7 @@ fun DynamicVerticalGrid(
                 TextField(
                     value = "",
                     onValueChange = { /* Handle filter value */ },
-                    label = { Text("Αναζήτηση με κλειδί") },
+                    label = { Text(stringResource(R.string.search) + "...") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -169,7 +171,7 @@ fun DynamicVerticalGrid(
                     },
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text("Apply")
+                    Text(stringResource(R.string.apply))
                 }
             }
         }
@@ -190,7 +192,7 @@ fun DynamicVerticalGrid(
                 onSearch = {},
                 active = false,
                 onActiveChange = {},
-                placeholder = { Text("Search") },
+                placeholder = { Text(stringResource(R.string.search)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -252,7 +254,10 @@ fun OpenFiltersDrawer(drawerState: DrawerState, coroutineScope: CoroutineScope) 
             tint = Color.White,
             modifier = Modifier.padding(end = 8.dp)
         )
-        Text(text = "Φίλτρα", color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = stringResource(R.string.filters),
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
@@ -288,7 +293,7 @@ fun ProductCard(product: Product, navController: NavController, modifier: Modifi
             onClick = {
                 Toast.makeText(
                     context,
-                    product.name + " selected..",
+                    product.name + context.getString(R.string.selected),
                     Toast.LENGTH_SHORT
                 ).show()
                 navController.navigate("product-details/${product.name}")
@@ -326,8 +331,10 @@ fun ProductCard(product: Product, navController: NavController, modifier: Modifi
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
+                            val decimalFormat = DecimalFormat("#.##")
+                            val formattedPercentage = decimalFormat.format(calculateDiscountPercentage(product))
                             androidx.compose.material3.Text(
-                                text = "-${calculateDiscountPercentage(product)}%",
+                                text = "-${formattedPercentage}%",
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -347,7 +354,7 @@ fun ProductCard(product: Product, navController: NavController, modifier: Modifi
                                         isFavorite = false
                                         Toast.makeText(
                                             context,
-                                            "Removed from favorites",
+                                            context.getString(R.string.removed_from_favorites),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -365,7 +372,7 @@ fun ProductCard(product: Product, navController: NavController, modifier: Modifi
                                 isFavorite = true
                                 Toast.makeText(
                                     context,
-                                    "Added to favorites",
+                                    context.getString(R.string.added_to_favorites),
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
