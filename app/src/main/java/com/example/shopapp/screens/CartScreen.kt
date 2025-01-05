@@ -60,10 +60,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -140,11 +143,12 @@ fun CartScreen(
         // Render the product list after fetching data
         if (productList.isEmpty() && !isLoading.value) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = stringResource(R.string.no_products_found)+".")
+                Text(text = stringResource(R.string.no_products_found) + ".")
             }
         } else {
             LazyColumn(
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier
+                    .fillMaxWidth()
                     .padding(start = 0.dp, end = 0.dp, top = 30.dp, bottom = 0.dp),
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 20.dp)
@@ -159,18 +163,18 @@ fun CartScreen(
                     ) {
                         // Left Column for Product Image
                         Column {
-                             AsyncImage(
-                                 model = ImageRequest.Builder(LocalContext.current)
-                                     .data(product.imageUrl)
-                                     .crossfade(true)
-                                     .build(),
-                                 contentDescription = product.name,
-                                 modifier = Modifier
-                                     .size(100.dp)
-                                     .aspectRatio(1f)
-                                     .clip(RoundedCornerShape(8.dp)),
-                                 contentScale = ContentScale.Crop
-                             )
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(product.imageUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = product.name,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
                         }
 
                         // Middle Column for Text Details
@@ -190,24 +194,39 @@ fun CartScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 fontWeight = FontWeight.Bold,
 
-                            )
-                            getColorName(product.selectedColor)?.let {
-
-                                Text(
-                                    text = it,
-                                    fontSize = 16.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
                                 )
-                            }
-                            Text(
-                                text = "${product.price}€",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 16.sp,
-                                modifier = Modifier.fillMaxWidth(),
-                                fontWeight = FontWeight.ExtraBold,
+                            ColorPicker(
+                                color = product.selectedColor,
+                                isSelected = false,
+                                onClick = {
+                                }
                             )
+                            Row() {
+                                androidx.wear.compose.material.Text(
+                                    text = if (product.discountedPrice > 0)
+                                        "${product.discountedPrice} €"
+                                    else
+                                        "${product.price} €",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                                if (product.discountedPrice > 0) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    androidx.wear.compose.material.Text(
+                                        text = product.price.toString() + "€",
+                                        overflow = Ellipsis,
+                                        style = TextStyle(textDecoration = TextDecoration.LineThrough),
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+
+                                }
+
+                            }
+
                         }
 
                         // Right Column for Quantity Controls
@@ -226,13 +245,18 @@ fun CartScreen(
                                             productList,
                                         )
                                     },
-                                    modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .padding(0.dp),  //avoid the oval shape
                                     shape = CircleShape,
-                                    border= BorderStroke(1.dp,Color.Red,),
+                                    border = BorderStroke(1.dp, Color.Red),
                                     contentPadding = PaddingValues(0.dp),  //avoid the little icon
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                                 ) {
-                                    Icon(Icons.Outlined.Delete, contentDescription = "content description")
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = "content description"
+                                    )
                                 }
                             } else {
                                 Button(
@@ -244,15 +268,23 @@ fun CartScreen(
                                             quantity.intValue,
                                             productList,
 
-                                        )
+                                            )
                                     },
-                                    modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .padding(0.dp),  //avoid the oval shape
                                     shape = CircleShape,
-                                    border= BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground,),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.onBackground,
+                                    ),
                                     contentPadding = PaddingValues(0.dp),  //avoid the little icon
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor =  MaterialTheme.colorScheme.onBackground)
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
                                 ) {
-                                    Icon(painter= painterResource(R.drawable.outline_remove_24), contentDescription = "content description")
+                                    Icon(
+                                        painter = painterResource(R.drawable.outline_remove_24),
+                                        contentDescription = "content description"
+                                    )
                                 }
                             }
                             Text(
@@ -261,19 +293,25 @@ fun CartScreen(
                                 color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 18.sp
                             )
-                            OutlinedButton(onClick = {
-                                quantity.intValue++
-                                updateCart(
-                                    product = product,
-                                    userId = userId!!,
-                                    quantity.intValue
-                                )
-                            },
-                                modifier= Modifier.size(30.dp).padding(0.dp),  //avoid the oval shape
+                            OutlinedButton(
+                                onClick = {
+                                    quantity.intValue++
+                                    updateCart(
+                                        product = product,
+                                        userId = userId!!,
+                                        quantity.intValue
+                                    )
+                                },
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(0.dp),  //avoid the oval shape
                                 shape = CircleShape,
-                                border= BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground,),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onBackground,
+                                ),
                                 contentPadding = PaddingValues(0.dp),  //avoid the little icon
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor =  MaterialTheme.colorScheme.onBackground)
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground)
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "content description")
                             }
@@ -300,9 +338,11 @@ fun CartScreen(
         }
     }
 }
+
 private fun String.fromHex(color: String): Color {
     return Color(android.graphics.Color.parseColor(color))
 }
+
 @Composable
 fun TotalPrice(
     modifier: Modifier = Modifier,
@@ -332,15 +372,24 @@ fun TotalPrice(
     }
 }
 
-fun calculateTotalPrice(productList: List<Product>): Double {
-    var totalPrice = 0.0;
+fun calculateTotalPrice(productList: List<Product>): Float {
+    var totalPrice = 0.0f;
     productList.forEach { product ->
-        totalPrice += product.price * product.quantity
+        if (product.discountedPrice > 0) {
+            totalPrice += product.discountedPrice * product.quantity
+        } else {
+            totalPrice += product.price * product.quantity
+        }
     }
     return totalPrice
 }
 
-fun updateCart(product: Product, userId: String,quantity: Int, productList: MutableList<Product>? = null) {
+fun updateCart(
+    product: Product,
+    userId: String,
+    quantity: Int,
+    productList: MutableList<Product>? = null
+) {
     val db = FirebaseFirestore.getInstance()
     db.collection("cart")
         .whereEqualTo("userId", userId)
@@ -369,29 +418,5 @@ fun updateCart(product: Product, userId: String,quantity: Int, productList: Muta
         .addOnFailureListener { e ->
             Log.w("Firestore", "Error finding cart item", e)
         }
-}
-
-
-val colorNameMap = mapOf(
-    "#000000" to "${R.string.color_black}",
-    "#FFFFFF" to "${R.string.color_white}",
-    "#2C6BCF" to "${R.string.color_blue}",
-    "#4285F4" to "${R.string.color_blue}",
-    "#4682B4" to "${R.string.color_light_blue}",
-    "#FFD700" to "${R.string.color_yellow}",
-    "#FBBC04" to "${R.string.color_yellow}",
-    "#D75B5B" to "${R.string.color_red}",
-    "#EA4335" to "${R.string.color_red}",
-    "#A1A1A1" to "${R.string.color_gray}",
-    "#808080" to "${R.string.color_gray}",
-    "#5A5A5A" to "${R.string.color_space_gray}",
-    "#32CD32" to "${R.string.color_green}",
-    "#34A853" to "${R.string.color_green}",
-
-    // Add more colors as needed
-)
-
-fun getColorName(hex: String): String? {
-    return colorNameMap[hex.uppercase()]
 }
 

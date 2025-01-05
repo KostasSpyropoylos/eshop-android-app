@@ -31,4 +31,10 @@
     <string name="color_green">Πράσινο</string>
     <string name="login">Σύνδεση</string>
     <string name="signup">Εγγραφή</string>
+    <string name="reviews">Αξιολογήσεις</string>
+    <string name="color">Χρώμα</string>
+    <string name="description">Περιγραφή</string>
+    <string name="specifications">Χαρακτηριστικά</string>
+    <string name="add_to_cart">Προσθήκη στο καλάθι</string>
+    <string name="procceed_to_cart">Συνέχεια στο καλάθι</string>
 </resources>

@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +59,7 @@ import androidx.navigation.NavHostController
 import androidx.wear.compose.material.Text
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.shopapp.R
 import com.example.shopapp.data.Product
 import com.example.shopapp.data.Specifications
 import com.google.firebase.auth.FirebaseAuth
@@ -128,17 +130,22 @@ fun ProductDetailsScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (productData.discountedPrice >0) {
-                                Text(
-                                    text = "${productData.discountedPrice} €",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.bodyLarge,
+                            Text(
+                                text = if (productData.discountedPrice > 0)
+                                    "${productData.discountedPrice} €"
+                                else
+                                    "${productData.price} €",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodyLarge.copy(
                                     fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Bold
                                 )
+                            )
+                            if (productData.discountedPrice > 0) {
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = productData.price.toString() + "€",
                                     overflow = Ellipsis,
@@ -147,38 +154,32 @@ fun ProductDetailsScreen(
                                     fontWeight = FontWeight.Bold,
                                 )
 
-                            }else{
+                            }
 
-                                Text(
-                                    text = "${productData.price} €",
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                StarRatingBar(
-                                    maxStars = 5,
-                                    rating = reviewAvgRating.floatValue,
-                                    onRatingChanged = {
-                                        reviewAvgRating.floatValue = it
-                                    }
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "(${productData.reviews.size} reviews)",
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                )
-                            }
+
                         }
                         Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            StarRatingBar(
+                                maxStars = 5,
+                                rating = reviewAvgRating.floatValue,
+                                onRatingChanged = {
+                                    reviewAvgRating.floatValue = it
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "(${productData.reviews.size} ${stringResource(R.string.reviews)})",
+                                color = MaterialTheme.colorScheme.onBackground,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         if (productData.colors.isNotEmpty()) {
                             Text(
-                                text = "Color",
+                                text = stringResource(R.string.color),
                                 color = MaterialTheme.colorScheme.onBackground,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontSize = 22.sp,
@@ -188,7 +189,7 @@ fun ProductDetailsScreen(
                             Row() {
 
                                 productData.colors.forEach { color ->
-                                    RingSample(
+                                    ColorPicker(
                                         color = color,
                                         isSelected = selectedColor.value == color,
                                         onClick = {
@@ -262,7 +263,7 @@ fun StarRatingBar(
 }
 
 @Composable
-public fun RingSample(color: String, isSelected: Boolean, onClick: () -> Unit) {
+public fun ColorPicker(color: String, isSelected: Boolean, onClick: () -> Unit) {
     // Use the hex parsing function to get the color
     val circleColor = color.fromHex(color)
 
@@ -286,7 +287,11 @@ private fun String.fromHex(color: String): Color {
 
 @Composable
 fun RoundedTabs(product: Product) {
-    val tabs = listOf("Description", "Specifications", "Reviews")
+    val tabs = listOf(
+        stringResource(R.string.description),
+        stringResource(R.string.specifications),
+        stringResource(R.string.reviews)
+    )
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Column {
@@ -299,7 +304,7 @@ fun RoundedTabs(product: Product) {
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedTabIndex])
                         .height(4.dp)
-                        .clip(RoundedCornerShape(50))
+                        .clip(RoundedCornerShape(35))
                         .background(MaterialTheme.colorScheme.primary)
                 )
             }
@@ -313,7 +318,7 @@ fun RoundedTabs(product: Product) {
                     Text(
                         text = title,
                         modifier = Modifier
-                            .padding(8.dp)
+                            .padding(2.dp)
                             .background(
                                 if (selectedTabIndex == index) MaterialTheme.colorScheme.primary.copy(
                                     alpha = 0.1f
@@ -482,17 +487,8 @@ fun QuantitySelector(
                             )
                         )
                         isAddedToCart = true
-                        Toast.makeText(
-                            context,
-                            "Added to cart",
-                            Toast.LENGTH_SHORT
-                        ).show()
+
                     } else {
-                        Toast.makeText(
-                            context,
-                            "Proceed to cart",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         navController.navigate("CART")
                     }
                 },
@@ -500,9 +496,17 @@ fun QuantitySelector(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
             ) {
                 if (!isAddedToCart) {
-                    Text("Add to cart", color = Color.White, fontSize = 16.sp)
+                    Text(
+                        stringResource(R.string.add_to_cart),
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
                 } else {
-                    Text("Proceed to cart", color = Color.White, fontSize = 16.sp)
+                    Text(
+                        stringResource(R.string.procceed_to_cart),
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
                 }
             }
 
