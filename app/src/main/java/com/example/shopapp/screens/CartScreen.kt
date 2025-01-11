@@ -109,6 +109,9 @@ fun CartScreen(
                         null
                     }
                 }
+                if(cartItems.isEmpty()){
+                    isLoading.value=false
+                }
 
                 cartItems.forEachIndexed { index, (productName, quantity, selectedColor) ->
                     db.collection("products")

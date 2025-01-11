@@ -41,7 +41,9 @@ fun FavoritesScreen(
             .addOnSuccessListener { result ->
                 // For each favorite product, fetch its details from the products collection
                 val productNames = result.documents.map { it.getString("productName") }
-
+                if(productNames.isEmpty()){
+                    isLoading.value=false
+                }
                 productNames.forEach { productName ->
                     if (productName != null) {
                         db.collection("products")
@@ -61,7 +63,6 @@ fun FavoritesScreen(
                             }
                     }
                 }
-                isLoading.value = false
             }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error fetching favorites", e)
