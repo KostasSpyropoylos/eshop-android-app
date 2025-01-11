@@ -1,11 +1,16 @@
 package com.example.shopapp.preferences
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.os.Build
+import android.os.LocaleList
 import android.util.DisplayMetrics
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.startActivity
+import androidx.core.os.LocaleListCompat
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -33,12 +38,24 @@ suspend fun getThemePreference(context: Context): Flow<String> {
         preferences[THEME_KEY] ?: "light" // Default to light theme if not set
     }
 }
-fun setLocale(context: Context, languageCode: String) {
-    val locale = Locale(languageCode)
-    Locale.setDefault(locale)
 
-    val config = Configuration()
-    config.setLocale(locale)
-
-    context.resources.updateConfiguration(config, context.resources.displayMetrics)
+fun localeSelection(context: Context, localeTag: String) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        context.getSystemService(LocaleManager::class.java).applicationLocales =
+            LocaleList.forLanguageTags(localeTag)
+    } else {
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(localeTag)
+        )
+    }
 }
+
+//fun setLocale(context: Context, languageCode: String) {
+//    val locale = Locale(languageCode)
+//    Locale.setDefault(locale)
+//
+//    val config = Configuration()
+//    config.setLocale(locale)
+//
+//    context.resources.updateConfiguration(config, context.resources.displayMetrics)
+//}

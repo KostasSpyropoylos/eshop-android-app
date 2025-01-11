@@ -2,6 +2,7 @@ package com.example.shopapp.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,17 +39,22 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shopapp.R
 import com.example.shopapp.preferences.getThemePreference
+import com.example.shopapp.preferences.localeSelection
 import com.example.shopapp.preferences.saveThemePreference
+
 import com.example.shopapp.viewmodels.AuthState
 import com.example.shopapp.viewmodels.AuthViewModel
+import java.util.Locale
 
 @Composable
 fun SettingsScreen(
-    modifier: Modifier ,
+    modifier: Modifier,
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
     val authState = authViewModel.authState.observeAsState()
+    val context = LocalContext.current
+
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("login")
@@ -155,7 +161,13 @@ fun SettingsScreen(
                 ) {
                     Text(
                         "EN",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable(onClick = {
+                            localeSelection(
+                                context,
+                                Locale("en").toLanguageTag()
+                            )
+                        })
                     )
 
                     Spacer(Modifier.width(10.dp))
@@ -165,7 +177,6 @@ fun SettingsScreen(
                     )
 
                 }
-                val languages = mapOf("English" to "en", "Español" to "es", "Français" to "fr")
 
 
             }
