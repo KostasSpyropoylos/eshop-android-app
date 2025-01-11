@@ -36,9 +36,12 @@ import androidx.compose.ui.unit.dp
 fun Accordion(modifier: Modifier = Modifier, model: AccordionModel) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier.padding(
-        horizontal = 0.dp,
-        vertical = 4.dp)) {
+    Column(
+        modifier.padding(
+            horizontal = 0.dp,
+            vertical = 4.dp
+        )
+    ) {
         AccordionHeader(title = model.header, isExpanded = expanded) {
             expanded = !expanded
         }
@@ -47,12 +50,16 @@ fun Accordion(modifier: Modifier = Modifier, model: AccordionModel) {
                 color = Color.White,
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.Gray),
-//                elevation = 1.dp,
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 LazyColumn {
                     items(model.rows) { row ->
-                        AccordionRow(row)
+                        AccordionRow(
+                            model = row,
+                            onCheckedChange = { isChecked ->
+                                row.checked = isChecked
+                            }
+                        )
                         Divider(color = Color.Gray, thickness = 1.dp)
                     }
                 }
@@ -60,6 +67,7 @@ fun Accordion(modifier: Modifier = Modifier, model: AccordionModel) {
         }
     }
 }
+
 @Composable
 private fun AccordionHeader(
     title: String = "Header",
@@ -80,9 +88,11 @@ private fun AccordionHeader(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(title, Modifier.weight(1f),
+            Text(
+                title, Modifier.weight(1f),
 //                style = accordionHeaderStyle,
-                color = Color.Gray)
+                color = Color.Gray
+            )
             Surface(shape = CircleShape, color = Color.LightGray.copy(alpha = 0.6f)) {
                 Icon(
                     Icons.Outlined.ArrowDropDown,
@@ -94,23 +104,31 @@ private fun AccordionHeader(
         }
     }
 }
+
 @Composable
 private fun AccordionRow(
-    model: AccordionModel.Row = AccordionModel.Row("AAPL", "$328.89")
-
+    model: AccordionModel.Row,
+    onCheckedChange: (Boolean) -> Unit // Callback to update the parent state
 ) {
-    var checked by remember { mutableStateOf(false) }
+    var checked by remember { mutableStateOf(model.checked) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(8.dp)
     ) {
-        Text(model.security, Modifier.weight(1f),  color = Color.DarkGray)
+        Text(
+            text = model.security,
+            modifier = Modifier.weight(1f),
+            color = Color.DarkGray
+        )
 
         Checkbox(
             checked = checked,
-            onCheckedChange = { checked = it }
+            onCheckedChange = {
+                checked = it
+                onCheckedChange(it) // Update the parent state
+            }
         )
-
     }
 }
 
@@ -121,6 +139,7 @@ data class AccordionModel(
 ) {
     data class Row(
         val security: String,
-        val price: String
+        val price: String,
+        var checked: Boolean = false
     )
 }

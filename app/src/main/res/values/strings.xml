@@ -15,7 +15,7 @@
     <string name="search">Search</string>
     <string name="apply">Apply</string>
 
-    <string name="no_products_found">No products found your cart</string>
+    <string name="no_products_found">No products found!</string>
     <string name="order_total">Order Total:</string>
 
 

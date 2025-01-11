@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
@@ -11,7 +12,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.example.shopapp.R
 import com.example.shopapp.data.Product
 import com.example.shopapp.screens.shared.DynamicVerticalGrid
 import com.example.shopapp.viewmodels.AuthViewModel
@@ -58,6 +61,7 @@ fun FavoritesScreen(
                             }
                     }
                 }
+                isLoading.value = false
             }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error fetching favorites", e)
@@ -68,8 +72,14 @@ fun FavoritesScreen(
             CircularProgressIndicator()
         }
     } else {
-        // Render the product list after fetching data
-        DynamicVerticalGrid(modifier, productList,navController)
+        if (productList.isEmpty() && !isLoading.value) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = stringResource(R.string.no_products_found) + ".")
+            }
+        }else {
+            // Render the product list after fetching data
+            DynamicVerticalGrid(modifier, productList, navController)
+        }
     }
 
 }

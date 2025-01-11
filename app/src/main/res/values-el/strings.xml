@@ -11,7 +11,7 @@
     <string name="filters">Φίλτρα</string>
     <string name="search">Αναζήτηση</string>
     <string name="apply">Εφαρμογή</string>
-    <string name="no_products_found">Δεν βρέθηκαν προϊόντα στο καλάθι</string>
+    <string name="no_products_found">Δεν βρέθηκαν προϊόντα!</string>
     <string name="order_total">Σύνολο:</string>
     <string name="selected">Επιλεγμένο</string>
     <string name="removed_from_favorites">Αφαιρέθηκε απο τα αγαπημένα</string>

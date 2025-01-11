@@ -96,6 +96,7 @@ fun CartScreen(
             .whereEqualTo("userId", userId)
             .get()
             .addOnSuccessListener { result ->
+                Log.w("Firestore", "fetched cart items")
                 val cartItems = result.documents.mapNotNull { doc ->
                     val productName = doc.getString("productName")
                     val selectedColor = doc.getString("selectedColor")
@@ -111,7 +112,7 @@ fun CartScreen(
 
                 cartItems.forEachIndexed { index, (productName, quantity, selectedColor) ->
                     db.collection("products")
-                        .whereEqualTo("name", productName) // Assuming "name" is the key
+                        .whereEqualTo("name", productName)
                         .get()
                         .addOnSuccessListener { productResult ->
                             for (doc in productResult) {
@@ -127,12 +128,15 @@ fun CartScreen(
                             }
                         }
                         .addOnFailureListener { e ->
-                            Log.w("Firestore", "Error fetching product details", e)
+                            Log.w("Firestore", "Error fetching cart items", e)
+                            isLoading.value = false
                         }
                 }
+                isLoading.value = false
             }
             .addOnFailureListener { e ->
-                Log.w("Firestore", "Error fetching favorites", e)
+                Log.w("Firestore", "Error fetching cart items", e)
+                isLoading.value = false
             }
     }
     if (isLoading.value) {

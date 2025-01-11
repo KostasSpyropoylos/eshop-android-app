@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -88,37 +90,62 @@ fun DynamicVerticalGrid(
 
     val columns = max(1, (availableWidth / (minCellWidth + itemSpacing)).toInt())
 
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
+
     val coroutineScope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        if (!drawerState.isClosed) {
+            coroutineScope.launch { drawerState.close() }
+        }
+    }
+    var searchProducts by remember { mutableStateOf(productList) }
 
     var searchQuery by remember { mutableStateOf("") }
-    val filteredProducts = productList.filter { product ->
-        searchQuery.isEmpty() || product.name.contains(searchQuery, ignoreCase = true) ||
-                product.description.contains(searchQuery, ignoreCase = true) ||
-                product.categoryId.contains(searchQuery, ignoreCase = true) ||
-                product.colors.any { it.contains(searchQuery, ignoreCase = true) }
-    }
+
 
     val accordionData = listOf(
         AccordionModel(
-            header = "Technology Stocks",
-            rows = listOf(
-                AccordionModel.Row(security = "Apple Inc.", price = "$175.32"),
-                AccordionModel.Row(security = "Microsoft Corp.", price = "$349.67"),
-                AccordionModel.Row(security = "NVIDIA Corp.", price = "$485.21")
-            )
+            header = stringResource(R.string.filters),
+            rows = productList.map { product ->
+                val security = product.name.split(" ").firstOrNull() ?: "Unknown"
+                AccordionModel.Row(
+                    security = security,
+                    price = product.price.toString(),
+                    checked = true
+                )
+            }
         )
     )
+    LaunchedEffect(key1 = searchQuery, key2 = accordionData) {
+        if(searchQuery.isNotEmpty()) {
+            searchProducts = productList.filter { product ->
+                searchQuery.isEmpty() || product.name.contains(searchQuery, ignoreCase = true) ||
+                        product.description.contains(searchQuery, ignoreCase = true) ||
+                        product.categoryId.contains(searchQuery, ignoreCase = true) ||
+                        product.colors.any { it.contains(searchQuery, ignoreCase = true) }
+            }
+        }else {
+            searchProducts = productList.filter { product ->
+                val selectedSecurities =
+                    accordionData[0].rows.filter { it.checked }.map { it.security }
+                selectedSecurities.any { security ->
+                    product.name.contains(security, ignoreCase = true)
+                }
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Drawer Content (e.g., filters)
             Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background)
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .widthIn(max = 320.dp) // Limit the maximum width of the drawer content
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
@@ -156,17 +183,18 @@ fun DynamicVerticalGrid(
                 Spacer(modifier = Modifier.height(16.dp))
                 Accordion(Modifier, accordionData[0])
 
-                // Example fields for filtering
-                TextField(
-                    value = "",
-                    onValueChange = { /* Handle filter value */ },
-                    label = { Text(stringResource(R.string.search) + "...") },
-                    modifier = Modifier.fillMaxWidth()
-                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        // Apply filters and close drawer
+                        searchProducts = productList.filter { product ->
+                            val selectedSecurities =
+                                accordionData[0].rows.filter { it.checked }.map { it.security }
+
+                            selectedSecurities.any { security ->
+                                product.name.contains(security, ignoreCase = true)
+                            }
+                        }
+                        Log.d("DynamicVerticalGrid", "${searchProducts}")
                         coroutineScope.launch { drawerState.close() }
                     },
                     modifier = Modifier.align(Alignment.End)
@@ -193,7 +221,12 @@ fun DynamicVerticalGrid(
                 active = false,
                 onActiveChange = {},
                 placeholder = { Text(stringResource(R.string.search)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search Icon"
+                    )
+                },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
@@ -215,7 +248,7 @@ fun DynamicVerticalGrid(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(filteredProducts) { product ->
+                    items(searchProducts) { product ->
                         ProductCard(
                             product,
                             navController,
@@ -228,12 +261,16 @@ fun DynamicVerticalGrid(
                         .align(Alignment.BottomCenter)
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
-                    OpenFiltersDrawer(drawerState = drawerState, coroutineScope = coroutineScope)
+                    OpenFiltersDrawer(
+                        drawerState = drawerState,
+                        coroutineScope = coroutineScope
+                    )
                 }
 
             }
         }
     }
+
 
 }
 
@@ -332,7 +369,8 @@ fun ProductCard(product: Product, navController: NavController, modifier: Modifi
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             val decimalFormat = DecimalFormat("#.##")
-                            val formattedPercentage = decimalFormat.format(calculateDiscountPercentage(product))
+                            val formattedPercentage =
+                                decimalFormat.format(calculateDiscountPercentage(product))
                             androidx.compose.material3.Text(
                                 text = "-${formattedPercentage}%",
                                 color = MaterialTheme.colorScheme.onPrimary,
